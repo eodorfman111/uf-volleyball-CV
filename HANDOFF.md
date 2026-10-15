@@ -7,6 +7,7 @@ Status as of the end of the agent run. Numbers here are copied from `EVAL.md` an
 - Court calibration from clicked points (`scripts/click_court.py` -> `configs/courts/*.yaml` -> `calibrate`), with fit / leave-one-out / held-out error and an overlay image. Optional radial distortion (`k1`) from traced lines.
 - Ball: VballNet ONNX (MIT, temporal, 9 grayscale frames) in `detect`; tracker cleanup (jump gating, static false-positive removal, gap interpolation).
 - Players: D-FINE detector (Apache-2.0 model card) + ByteTrack (supervision, MIT), feet projected to court meters, near/far side.
+- Ball model trained here (`scripts/train_ball_heatmap.py`, small single-frame heatmap net, 35 min CPU): held-out F1 0.796 vs 0.744 for pretrained D-FINE (thr 0.2) on the same 167 frames. On GPU, train longer and at full resolution.
 - Rally frame classifier on public data: held-out acc 0.822 / F1 0.833.
 - Jump height from flight time and a ballistic 3D serve-speed fit, both checked on synthetic data only.
 - Labeling queue generator, labeling guide, footage request.

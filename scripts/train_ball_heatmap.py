@@ -155,7 +155,7 @@ def main():
         opt.step()
         step += 1
         if step % 50 == 0 or step == a.steps:
-            log.write(json.dumps({"step": step, "loss": round(float(loss), 5), "t": round(time.time() - t0, 1)}) + "\n")
+            log.write(json.dumps({"step": step, "loss": round(loss.detach().item(), 5), "t": round(time.time() - t0, 1)}) + "\n")
             log.flush()
             torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "step": step}, ck)
     res = {"args": vars(a), "n_train": len(train), "n_test": len(test), "train_seconds": round(time.time() - t0, 1)}
