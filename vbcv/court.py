@@ -68,8 +68,10 @@ def estimate_k1(lines, image_size, bounds=(-0.6, 0.3)):
 def fit_homography(img_pts, court_pts):
     img = np.asarray(img_pts, dtype=np.float64)
     crt = np.asarray(court_pts, dtype=np.float64)
-    method = cv2.RANSAC if len(img) > 4 else 0
-    H, _ = cv2.findHomography(img, crt, method, 0.05)
+    if len(img) >= 10:
+        H, _ = cv2.findHomography(img, crt, cv2.RANSAC, 0.15)
+    else:
+        H, _ = cv2.findHomography(img, crt, 0)
     return H
 
 

@@ -1,0 +1,26 @@
+{
+  "n_points": 6,
+  "distortion": null,
+  "k1_estimate": null,
+  "fit_err_m": {
+    "near_left": 0.2798526226839316,
+    "near_right": 0.22032229387759217,
+    "near_attack_left": 0.5065853428209298,
+    "near_attack_right": 0.2720370008502322,
+    "center_left": 0.3526918973822307,
+    "center_right": 0.23975799371557105
+  },
+  "fit_rmse_m": 0.3264372612066881,
+  "loo_err_m": {
+    "near_left": 1.9585347347014312,
+    "near_right": 1.4121087866998272,
+    "near_attack_left": 0.8724758300040633,
+    "near_attack_right": 0.46317511633536346,
+    "center_left": 1.4143520077243867,
+    "center_right": 0.7169541373122285
+  },
+  "loo_rmse_m": 1.2463325954979236,
+  "holdout_err_m": {},
+  "holdout_rmse_m": null,
+  "line_rmse_m": {}
+}
