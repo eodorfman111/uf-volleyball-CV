@@ -1,0 +1,3 @@
+/home/ubuntu/repos/uf-volleyball-cv/scripts/train_ball_heatmap.py:148: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  log.write(json.dumps({"step": step, "loss": round(float(loss), 5), "t": round(time.time() - t0, 1)}) + "\n")
