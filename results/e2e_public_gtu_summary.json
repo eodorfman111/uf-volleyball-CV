@@ -14,7 +14,7 @@
   "serve_speed_kmh": [
     15.935
   ],
-  "jumps": 21,
+  "jumps": 13,
   "sides": {
     "near": {
       "touches": {
@@ -42,8 +42,8 @@
           5.59
         ]
       ],
-      "jumps": 5,
-      "jump_height_cm_median": 114.816
+      "jumps": 3,
+      "jump_height_cm_median": 39.455
     },
     "far": {
       "touches": {
@@ -58,8 +58,8 @@
           9.08
         ]
       ],
-      "jumps": 16,
-      "jump_height_cm_median": 39.455
+      "jumps": 10,
+      "jump_height_cm_median": 30.718
     }
   }
 }

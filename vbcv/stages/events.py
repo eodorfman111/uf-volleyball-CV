@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 
+from vbcv.court import load_homography
+from vbcv.kinematics import camera_from_h, fit_ballistic
+
 from ..checkpoint import stage_dir
 from .ingest import load_meta
 
@@ -134,7 +137,7 @@ def label_touches(contacts, rallies, max_dist, net_y, block_window):
     return contacts
 
 
-def serve_speeds(contacts, fps):
+def serve_speeds(contacts, fps, ball=None, P=None):
     rows = []
     for rid, g in contacts[contacts.rally_id >= 0].groupby("rally_id"):
         g = g.sort_values("frame")
@@ -142,12 +145,17 @@ def serve_speeds(contacts, fps):
             continue
         s, r = g.iloc[0], g.iloc[1]
         dt = (r.frame - s.frame) / fps
-        if dt <= 0 or np.isnan(s.court_x) or np.isnan(r.court_x):
-            rows.append((rid, int(s.frame), int(r.frame), dt, np.nan, np.nan))
-            continue
-        d = float(np.hypot(r.court_x - s.court_x, r.court_y - s.court_y))
-        rows.append((rid, int(s.frame), int(r.frame), dt, d, d / dt * 3.6))
-    return pd.DataFrame(rows, columns=["rally_id", "serve_frame", "receive_frame", "flight_s", "ground_dist_m", "avg_ground_speed_kmh"])
+        d = float(np.hypot(r.court_x - s.court_x, r.court_y - s.court_y)) if dt > 0 and not (np.isnan(s.court_x) or np.isnan(r.court_x)) else np.nan
+        v3d, rms = np.nan, np.nan
+        if P is not None and ball is not None:
+            seg = ball[(ball.frame >= s.frame) & (ball.frame <= r.frame)]
+            if len(seg) >= 6:
+                fit = fit_ballistic(P, seg.frame.to_numpy() / fps, seg[["x", "y"]].to_numpy())
+                v3d, rms = fit["avg_kmh"], fit["rms_px"]
+        rows.append((rid, int(s.frame), int(r.frame), dt, d, d / dt * 3.6 if dt > 0 else np.nan, v3d, rms))
+    return pd.DataFrame(
+        rows, columns=["rally_id", "serve_frame", "receive_frame", "flight_s", "ground_dist_m", "avg_ground_speed_kmh", "ballistic_avg_kmh", "ballistic_rms_px"]
+    )
 
 
 def find_jumps(players, fps, c):
@@ -168,15 +176,21 @@ def find_jumps(players, fps, c):
                 j = i
                 while j < len(air) and air[j]:
                     j += 1
-                t = (f[j - 1] - f[i] + 1) / fps
+                a0, b0 = i, j
+                edge = c.get("edge_rise_frac", 0.0)
+                while a0 > 0 and rise[a0 - 1] > edge:
+                    a0 -= 1
+                while b0 < len(air) and rise[b0] > edge:
+                    b0 += 1
+                t = (f[b0] - f[a0 - 1]) / fps - 1 / fps if 0 < a0 and b0 < len(f) else (f[b0 - 1] - f[a0] + 1) / fps
                 gap_ok = np.all(np.diff(f[i:j]) <= 2) if j - i > 1 else False
                 if c["min_air_s"] <= t <= c["max_air_s"] and gap_ok:
                     pk = i + int(np.argmax(rise[i:j]))
                     rows.append(
                         (
                             int(tid),
-                            int(f[i]),
-                            int(f[j - 1]),
+                            int(f[a0]),
+                            int(f[b0 - 1]),
                             int(f[pk]),
                             t,
                             G * t * t / 8 * 100,
@@ -206,7 +220,13 @@ def run(cfg):
     contacts = attach_players(find_contacts(ball, ec["contact"]), players)
     contacts = label_touches(contacts, rallies, ec["contact"]["max_player_dist_m"], cfg["court"]["length_m"] / 2, int(meta["fps"] * 0.6))
     contacts.to_csv(out / "contacts.csv", index=False, float_format="%.3f")
-    serves = serve_speeds(contacts, meta["fps"])
+    hpath = stage_dir(cfg, "calibrate") / "homography.json"
+    P = None
+    if hpath.exists():
+        H, hmeta, _ = load_homography(hpath)
+        cam = camera_from_h(H, hmeta.get("image_size") or [meta["width"], meta["height"]])
+        P = cam["P"] if cam else None
+    serves = serve_speeds(contacts, meta["fps"], ball, P)
     serves.to_csv(out / "serves.csv", index=False, float_format="%.3f")
     jumps = find_jumps(players, meta["fps"], ec["jump"])
     jumps.to_csv(out / "jumps.csv", index=False, float_format="%.3f")

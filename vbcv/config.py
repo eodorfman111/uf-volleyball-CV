@@ -38,7 +38,7 @@ DEFAULTS = {
     "events": {
         "rally": {"min_ball_ratio": 0.5, "window_s": 1.0, "min_rally_s": 2.0, "merge_gap_s": 1.5, "pad_s": 1.0},
         "contact": {"min_angle_deg": 35, "min_speed_px": 2.0, "max_player_dist_m": 1.5, "min_sep_frames": 6},
-        "jump": {"min_rise_frac": 0.12, "min_air_s": 0.25, "max_air_s": 1.2},
+        "jump": {"min_rise_frac": 0.12, "edge_rise_frac": 0.005, "min_air_s": 0.25, "max_air_s": 1.2},
     },
     "stats": {},
 }
