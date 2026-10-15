@@ -1,0 +1,7 @@
+name: public_gtu
+video: /home/ubuntu/ref/fvti/examples/gtu_20250316_002.mp4
+court:
+  points_file: configs/courts/public_gtu.yaml
+detect:
+  players:
+    stride: 2

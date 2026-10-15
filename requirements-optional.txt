@@ -1,0 +1,2 @@
+ultralytics==8.4.177
+rtmlib==0.0.16

@@ -1,0 +1,9 @@
+runs/
+models/*.onnx
+models/*.pt
+data/
+*.mp4
+*.wav
+__pycache__/
+*.egg-info/
+.venv/

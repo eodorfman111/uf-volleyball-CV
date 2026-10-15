@@ -1,0 +1,2 @@
+train n 48188 ball box max-side px @960: p10 15.0 p50 28.5 p90 55.5
+test n 182 ball box max-side px @960: p10 13.5 p50 19.2 p90 30.0

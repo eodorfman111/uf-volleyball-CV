@@ -1,0 +1,12 @@
+image_size: [1920, 1080]
+frame: background_median
+method: hand-read from zoomed median background of examples/gtu_20250316_002.mp4; attack/center points are sideline intersections with the attack line and the post-to-post line
+points:
+  near_left: [190, 822]
+  near_right: [1665, 838]
+  near_attack_left: [504, 710]
+  near_attack_right: [1317, 722]
+  center_left: [605, 675]
+  center_right: [1218, 689]
+holdout: {}
+distortion: null

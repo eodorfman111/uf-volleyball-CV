@@ -1,0 +1,57 @@
+/home/ubuntu/repos/uf-volleyball-cv/scripts/train_ball_heatmap.py:148: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  log.write(json.dumps({"step": step, "loss": round(float(loss), 5), "t": round(time.time() - t0, 1)}) + "\n")
+{
+  "args": {
+    "data": "/home/ubuntu/data/public/ball_ds",
+    "test_matches": [
+      "match17",
+      "match18"
+    ],
+    "size": 320,
+    "sigma": 2.5,
+    "width": 16,
+    "steps": 1500,
+    "batch": 16,
+    "lr": 0.001,
+    "max_train": 0,
+    "thr": 0.5,
+    "max_dist_px": 10.0,
+    "orig": 960,
+    "device": "cpu",
+    "seed": 0,
+    "out": "runs/train_ball_heatmap"
+  },
+  "n_train": 41459,
+  "n_test": 167,
+  "train_seconds": 2126.8,
+  "test": {
+    "0.3": {
+      "tp": 133,
+      "fp": 34,
+      "fn": 34,
+      "precision": 0.7964,
+      "recall": 0.7964,
+      "f1": 0.7964,
+      "median_center_err_px": 2.24
+    },
+    "0.5": {
+      "tp": 133,
+      "fp": 34,
+      "fn": 34,
+      "precision": 0.7964,
+      "recall": 0.7964,
+      "f1": 0.7964,
+      "median_center_err_px": 2.24
+    },
+    "0.7": {
+      "tp": 133,
+      "fp": 33,
+      "fn": 34,
+      "precision": 0.8012,
+      "recall": 0.7964,
+      "f1": 0.7988,
+      "median_center_err_px": 2.24
+    }
+  }
+}
