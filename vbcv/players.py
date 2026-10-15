@@ -25,11 +25,7 @@ class DFineDetector:
         res = self.proc.post_process_object_detection(out, threshold=self.conf, target_sizes=sizes)
         dets = []
         for r in res:
-            rows = [
-                (*b, s, int(l))
-                for b, s, l in zip(r["boxes"].tolist(), r["scores"].tolist(), r["labels"].tolist())
-                if int(l) in self.keep
-            ]
+            rows = [(*b, s, int(l)) for b, s, l in zip(r["boxes"].tolist(), r["scores"].tolist(), r["labels"].tolist()) if int(l) in self.keep]
             dets.append(np.array(rows, dtype=np.float32).reshape(-1, 6))
         return dets
 

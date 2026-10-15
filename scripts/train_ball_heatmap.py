@@ -33,7 +33,9 @@ def items(split, matches=None):
 
 
 def block(i, o):
-    return nn.Sequential(nn.Conv2d(i, o, 3, padding=1), nn.BatchNorm2d(o), nn.ReLU(inplace=True), nn.Conv2d(o, o, 3, padding=1), nn.BatchNorm2d(o), nn.ReLU(inplace=True))
+    return nn.Sequential(
+        nn.Conv2d(i, o, 3, padding=1), nn.BatchNorm2d(o), nn.ReLU(inplace=True), nn.Conv2d(o, o, 3, padding=1), nn.BatchNorm2d(o), nn.ReLU(inplace=True)
+    )
 
 
 class HeatNet(nn.Module):
@@ -92,7 +94,15 @@ def evaluate(model, data, size, thr, max_dist_px, orig):
                 fp += 1
                 fn += 1
     pr, rc = tp / max(tp + fp, 1), tp / max(tp + fn, 1)
-    return {"tp": tp, "fp": fp, "fn": fn, "precision": round(pr, 4), "recall": round(rc, 4), "f1": round(2 * pr * rc / max(pr + rc, 1e-9), 4), "median_center_err_px": round(float(np.median(errs)), 2) if errs else None}
+    return {
+        "tp": tp,
+        "fp": fp,
+        "fn": fn,
+        "precision": round(pr, 4),
+        "recall": round(rc, 4),
+        "f1": round(2 * pr * rc / max(pr + rc, 1e-9), 4),
+        "median_center_err_px": round(float(np.median(errs)), 2) if errs else None,
+    }
 
 
 def main():

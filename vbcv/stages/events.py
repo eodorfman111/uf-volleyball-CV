@@ -73,7 +73,7 @@ def find_contacts(ball, c):
             if (ang >= c["min_angle_deg"] or ratio > 2.5) and not (up_to_down and ang < 90):
                 cand.append((score, i))
         taken = []
-        for score, i in sorted(cand, reverse=True):
+        for _score, i in sorted(cand, reverse=True):
             if all(abs(i - j) >= c["min_sep_frames"] for j in taken):
                 taken.append(i)
         for i in sorted(taken):
@@ -115,7 +115,7 @@ def label_touches(contacts, rallies, max_dist, net_y, block_window):
         m = (contacts.frame >= r.start_frame) & (contacts.frame <= r.end_frame)
         contacts.loc[m, "rally_id"] = r.rally_id
     contacts.loc[contacts.player_dist > max_dist, "side"] = None
-    for rid, g in contacts[contacts.rally_id >= 0].groupby("rally_id"):
+    for _rid, g in contacts[contacts.rally_id >= 0].groupby("rally_id"):
         side, n, prev = None, 0, None
         for k, (i, r) in enumerate(g.iterrows()):
             s = r.side if isinstance(r.side, str) else None
@@ -172,11 +172,26 @@ def find_jumps(players, fps, c):
                 gap_ok = np.all(np.diff(f[i:j]) <= 2) if j - i > 1 else False
                 if c["min_air_s"] <= t <= c["max_air_s"] and gap_ok:
                     pk = i + int(np.argmax(rise[i:j]))
-                    rows.append((int(tid), int(f[i]), int(f[j - 1]), int(f[pk]), t, G * t * t / 8 * 100, float(rise[pk]), g.side.iloc[pk], float(g.court_x.iloc[pk]), float(g.court_y.iloc[pk])))
+                    rows.append(
+                        (
+                            int(tid),
+                            int(f[i]),
+                            int(f[j - 1]),
+                            int(f[pk]),
+                            t,
+                            G * t * t / 8 * 100,
+                            float(rise[pk]),
+                            g.side.iloc[pk],
+                            float(g.court_x.iloc[pk]),
+                            float(g.court_y.iloc[pk]),
+                        )
+                    )
                 i = j
             else:
                 i += 1
-    return pd.DataFrame(rows, columns=["track_id", "takeoff_frame", "landing_frame", "peak_frame", "air_s", "height_cm_flight", "peak_rise_bbox", "side", "court_x", "court_y"])
+    return pd.DataFrame(
+        rows, columns=["track_id", "takeoff_frame", "landing_frame", "peak_frame", "air_s", "height_cm_flight", "peak_rise_bbox", "side", "court_x", "court_y"]
+    )
 
 
 def run(cfg):

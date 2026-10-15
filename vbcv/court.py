@@ -3,6 +3,7 @@ import json
 import cv2
 import numpy as np
 
+
 def court_points(length_m=18.0, width_m=9.0, attack_line_m=3.0):
     half = length_m / 2
     return {

@@ -16,3 +16,7 @@ include = ["vbcv*"]
 
 [tool.ruff]
 line-length = 160
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["B905", "E741"]

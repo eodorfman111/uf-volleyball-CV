@@ -80,9 +80,7 @@ def add_court(df, H, cfg, cam=None):
         df["on_court"] = True
         df["side"] = "unknown"
         return df
-    df["on_court"] = (
-        (df.court_x > -margin) & (df.court_x < c["width_m"] + margin) & (df.court_y > -margin) & (df.court_y < c["length_m"] + margin)
-    )
+    df["on_court"] = (df.court_x > -margin) & (df.court_x < c["width_m"] + margin) & (df.court_y > -margin) & (df.court_y < c["length_m"] + margin)
     df["side"] = np.where(df.court_y < c["length_m"] / 2, "near", "far")
     return df
 
@@ -94,7 +92,9 @@ def run(cfg):
     hpath = stage_dir(cfg, "calibrate") / "homography.json"
     H, _, cam = load_homography(hpath) if hpath.exists() else (None, None, None)
     tb = cfg["track"]["ball"]
-    ball = clean_ball(pd.read_csv(det_dir / "ball.csv"), tb["max_jump_px"], tb["max_gap"], tb["min_len"], tb.get("static_cell_px", 0), tb.get("static_frac", 1.0))
+    ball = clean_ball(
+        pd.read_csv(det_dir / "ball.csv"), tb["max_jump_px"], tb["max_gap"], tb["min_len"], tb.get("static_cell_px", 0), tb.get("static_frac", 1.0)
+    )
     ball.to_csv(out / "ball.csv", index=False, float_format="%.2f")
     tp = cfg["track"]["players"]
     raw = pd.read_csv(det_dir / "players.csv")

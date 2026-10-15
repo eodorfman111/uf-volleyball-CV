@@ -42,7 +42,15 @@ def main():
         gt = load_gt(Path(a.split, "labels", im.stem + ".txt"), w, h)
         d = det([frame])[0]
         rows.append({"image": im.name, "gt": gt, "pred": [((b[0] + b[2]) / 2, (b[1] + b[3]) / 2, float(b[4])) for b in d.tolist()]})
-    res = {"split": a.split, "matches": a.matches, "n_images": len(rows), "n_gt": sum(len(r["gt"]) for r in rows), "max_dist_px": a.max_dist_px, "model": a.model, "by_threshold": {}}
+    res = {
+        "split": a.split,
+        "matches": a.matches,
+        "n_images": len(rows),
+        "n_gt": sum(len(r["gt"]) for r in rows),
+        "max_dist_px": a.max_dist_px,
+        "model": a.model,
+        "by_threshold": {},
+    }
     for t in a.thresholds:
         tp = fp = fn = 0
         errs = []
@@ -64,7 +72,15 @@ def main():
             fp += len(preds) - len(used)
         prec = tp / max(tp + fp, 1)
         rec = tp / max(tp + fn, 1)
-        res["by_threshold"][str(t)] = {"tp": tp, "fp": fp, "fn": fn, "precision": round(prec, 4), "recall": round(rec, 4), "f1": round(2 * prec * rec / max(prec + rec, 1e-9), 4), "median_center_err_px": round(float(np.median(errs)), 2) if errs else None}
+        res["by_threshold"][str(t)] = {
+            "tp": tp,
+            "fp": fp,
+            "fn": fn,
+            "precision": round(prec, 4),
+            "recall": round(rec, 4),
+            "f1": round(2 * prec * rec / max(prec + rec, 1e-9), 4),
+            "median_center_err_px": round(float(np.median(errs)), 2) if errs else None,
+        }
     res["seconds"] = round(time.time() - t0, 1)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)

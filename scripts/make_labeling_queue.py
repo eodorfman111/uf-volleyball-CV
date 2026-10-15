@@ -1,5 +1,4 @@
 import argparse
-from pathlib import Path
 
 import cv2
 import pandas as pd
@@ -17,7 +16,14 @@ def clip_rows(rd, fps, pad_s, last_frame):
             rows.append({"task": "rally_boundary", "priority": 1, "frame": int(f), "why": edge})
     contacts = pd.read_csv(rd / "events" / "contacts.csv")
     for r in contacts.itertuples():
-        rows.append({"task": "touch", "priority": 2 if r.label in ("serve", "attack", "block") else 3, "frame": int(r.frame), "why": f"pred={r.label} touch_n={r.touch_n} player_dist_m={r.player_dist:.2f}"})
+        rows.append(
+            {
+                "task": "touch",
+                "priority": 2 if r.label in ("serve", "attack", "block") else 3,
+                "frame": int(r.frame),
+                "why": f"pred={r.label} touch_n={r.touch_n} player_dist_m={r.player_dist:.2f}",
+            }
+        )
     jumps = pd.read_csv(rd / "events" / "jumps.csv")
     for r in jumps.itertuples():
         rows.append({"task": "jump", "priority": 3, "frame": int(r.takeoff_frame), "why": f"track={r.track_id} pred_height_cm={r.height_cm_flight:.0f}"})

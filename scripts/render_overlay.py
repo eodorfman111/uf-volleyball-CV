@@ -30,7 +30,7 @@ def main():
     out = Path(a.out or rd / "viz")
     out.mkdir(parents=True, exist_ok=True)
     writer = None
-    last = {}
+
     for i, fr in frames(cfg["video"], a.start, a.end):
         img = draw_court(fr, H, cam=cam)
         g = pf.get(i)
@@ -45,7 +45,6 @@ def main():
             b = ball.loc[i]
             cv2.circle(img, (int(b.x), int(b.y)), 10, (0, 255, 255), 3)
         for r in contacts[(contacts.frame <= i) & (contacts.frame > i - 15)].itertuples():
-            last = r
             cv2.putText(img, f"{r.label} #{r.touch_n}", (int(r.x) + 14, int(r.y)), 0, 1.0, COLORS.get(r.label, (255, 255, 255)), 3)
         cv2.putText(img, f"frame {i}", (20, 40), 0, 1.0, (255, 255, 255), 2)
         img = cv2.resize(img, None, fx=a.scale, fy=a.scale)
