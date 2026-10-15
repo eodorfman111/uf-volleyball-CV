@@ -5,3 +5,12 @@ Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF
 [calibrate] done in 0.04s
 [detect] running
 Loading weights:   0%|          | 0/764 [00:00<?, ?it/s]Loading weights: 100%|██████████| 764/764 [00:00<00:00, 10382.11it/s]
+/home/ubuntu/repos/uf-volleyball-cv/vbcv/stages/track.py:46: FutureWarning: The `ByteTrack` was deprecated since v0.28.0. It will be removed in v0.31.0.
+  tracker = sv.ByteTrack(lost_track_buffer=buffer, frame_rate=max(1, int(round(fps / stride))))
+[detect] done in 425.9s
+[track] running
+[track] done in 0.84s
+[events] running
+[events] done in 0.12s
+[stats] running
+[stats] done in 0.01s

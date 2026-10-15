@@ -1,0 +1,66 @@
+{
+  "video": "/home/ubuntu/ref/fvti/examples/gtu_20250316_002.mp4",
+  "duration_s": 33.07,
+  "rallies": 1,
+  "rally_time_s": 33.033,
+  "contacts": 58,
+  "touch_labels": {
+    "pass": 22,
+    "extra": 18,
+    "set": 11,
+    "attack": 6,
+    "serve": 1
+  },
+  "serve_speed_kmh": [
+    2.379
+  ],
+  "jumps": 21,
+  "sides": {
+    "near": {
+      "touches": {
+        "extra": 18,
+        "pass": 10,
+        "set": 7,
+        "attack": 6,
+        "serve": 1
+      },
+      "attack_origin_court_xy": [
+        [
+          4.22,
+          4.03
+        ],
+        [
+          3.95,
+          2.55
+        ],
+        [
+          4.3,
+          2.83
+        ],
+        [
+          3.85,
+          7.18
+        ],
+        [
+          5.69,
+          7.05
+        ],
+        [
+          5.77,
+          5.59
+        ]
+      ],
+      "jumps": 5,
+      "jump_height_cm_median": 114.816
+    },
+    "far": {
+      "touches": {
+        "pass": 6,
+        "set": 4
+      },
+      "attack_origin_court_xy": [],
+      "jumps": 16,
+      "jump_height_cm_median": 39.455
+    }
+  }
+}
