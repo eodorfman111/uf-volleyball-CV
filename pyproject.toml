@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vbcv"
+version = "0.1.0"
+description = "Indoor volleyball computer vision pipeline for fixed end-line cameras"
+requires-python = ">=3.10"
+
+[project.scripts]
+vbcv = "vbcv.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["vbcv*"]
+
+[tool.ruff]
+line-length = 160
