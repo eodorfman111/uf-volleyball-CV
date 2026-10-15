@@ -1,0 +1,14 @@
+lap                    0.5.13
+numpy                  2.2.6
+onnxruntime            1.23.2
+opencv-contrib-python  5.0.0.93
+opencv-python          5.0.0.93
+opencv-python-headless 5.0.0.93
+rtmlib                 0.0.16
+scikit-learn           1.7.2
+supervision            0.30.9
+torch                  2.14.1+cpu
+torchvision            0.29.1+cpu
+ultralytics            8.4.177
+ultralytics-thop       2.2.2
+yt-dlp                 2026.8.19

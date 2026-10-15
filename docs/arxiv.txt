@@ -1,0 +1,154 @@
+### all:volleyball+AND+all:ball
+2402.01083v1 2024-02 Estimating individual contributions to team success in women's college volleyball
+2202.13765v4 2022-02 Simple mechanism rules the dynamics of volleyball
+2309.14753v1 2023-09 Advanced Volleyball Stats for All Levels: Automatic Setting Tactic Detection and Classification with a Single Camera
+1511.06181v2 2015-11 What Players do with the Ball: A Physically Constrained Interaction Modeling
+2511.00261v2 2025-10 Spot The Ball: A Benchmark for Visual Social Inference
+2404.06626v1 2024-04 Why is soccer so popular: Understanding underdog achievement and randomness in team ball sports
+2205.01564v1 2022-05 On the problem of projectile motion in a medium with quadratic resistance
+2508.11569v1 2025-08 TrajSV: A Trajectory-based Model for Sports Video Representations and Applications
+### all:volleyball+AND+all:tracking
+2209.13154v1 2022-09 Observation Centric and Central Distance Recovery on Sports Player Tracking
+1612.06454v1 2016-12 Exploring Structure for Long-Term Tracking of Multiple Objects in Sports Videos
+2304.05170v2 2023-04 SportsMOT: A Large Multi-Object Tracking Dataset in Multiple Sports Scenes
+2209.12248v1 2022-09 D$^{\bf{3}}$: Duplicate Detection Decontaminator for Multi-Athlete Tracking in Sports Videos
+1511.06181v2 2015-11 What Players do with the Ball: A Physically Constrained Interaction Modeling
+2305.16487v2 2023-05 EgoHumans: An Egocentric 3D Multi-Human Benchmark
+2511.12606v3 2025-11 Pixels or Positions? Benchmarking Modalities in Group Activity Recognition
+2407.19497v2 2024-07 Skeleton-based Group Activity Recognition via Spatial-Temporal Panoramic Graph
+2108.04186v1 2021-08 Pose is all you need: The pose only group activity recognition system (POGARS)
+### all:volleyball+AND+all:action
+2209.13846v2 2022-09 VREN: Volleyball Rally Dataset with Expression Notation Language
+2211.09564v1 2022-11 Global MHD simulations of the solar convective zone using a volleyball mesh decomposition. I. Pilot
+2206.01038v1 2022-06 A Survey on Video Action Recognition in Sports: Datasets, Methods and Applications
+2502.09967v1 2025-02 VicKAM: Visual Conceptual Knowledge Guided Action Map for Weakly Supervised Group Activity Recognition
+2410.07153v2 2024-10 CHASE: Learning Convex Hull Adaptive Shift for Skeleton-based Multi-Entity Action Recognition
+1607.02643v1 2016-07 Hierarchical Deep Temporal Models for Group Activity Recognition
+1802.02091v1 2018-02 Structural Recurrent Neural Network (SRNN) for Group Activity Analysis
+1812.07124v1 2018-12 Multi-Level Sequence GAN for Group Activity Recognition
+2609.28049v1 2026-09 Prompt, Probe, Train, or Annotate? Single-camera sports video understanding in amateur settings
+2108.04186v1 2021-08 Pose is all you need: The pose only group activity recognition system (POGARS)
+1704.03058v1 2017-04 CERN: Confidence-Energy Recurrent Network for Group Activity Recognition
+2204.02148v2 2022-04 Dual-AI: Dual-path Actor Interaction Learning for Group Activity Recognition
+2410.21108v2 2024-10 LiGAR: LiDAR-Guided Hierarchical Transformer for Multi-Modal Group Activity Recognition
+2508.11569v1 2025-08 TrajSV: A Trajectory-based Model for Sports Video Representations and Applications
+### abs:volleyball+AND+abs:dataset
+2209.13846v2 2022-09 VREN: Volleyball Rally Dataset with Expression Notation Language
+2308.11142v1 2023-08 Graph Encoding and Neural Network Approaches for Volleyball Analytics: From Game Outcome to Individual Play Predictions
+2303.06439v1 2023-03 DECOMPL: Decompositional Learning with Attention Pooling for Group Activity Recognition from a Single Volleyball Image
+1812.10328v1 2018-12 A Multi-Stream Convolutional Neural Network Framework for Group Activity Recognition
+1607.02643v1 2016-07 Hierarchical Deep Temporal Models for Group Activity Recognition
+2011.05653v3 2020-11 Skeleton-based Relational Reasoning for Group Activity Analysis
+1404.6413v1 2014-04 Indoor Activity Detection and Recognition for Sport Games Analysis
+1802.02091v1 2018-02 Structural Recurrent Neural Network (SRNN) for Group Activity Analysis
+2007.09470v1 2020-07 Social Adaptive Module for Weakly-supervised Group Activity Recognition
+2505.05907v1 2025-05 AI-assisted Automatic Jump Detection and Height Estimation in Volleyball Using a Waist-worn IMU
+2509.22111v1 2025-09 Modeling Psychological Profiles in Volleyball via Mixed-Type Bayesian Networks
+1904.10117v1 2019-04 Learning Actor Relation Graphs for Group Activity Recognition
+1904.03308v1 2019-04 Convolutional Relational Machine for Group Activity Recognition
+2003.14109v1 2020-03 Real-Time Camera Pose Estimation for Sports Fields
+2206.09258v1 2022-06 Machine Learning in Sports: A Case Study on Using Explainable Models for Predicting Outcomes of Volleyball Matches
+### ti:TrackNet
+1902.01466v1 2019-02 TrackNet: Simultaneous Object Detection and Tracking and Its Application in Traffic Video Analysis
+2205.13857v1 2022-05 TrackNet: A Triplet metric-based method for Multi-Target Multi-Camera Vehicle Tracking
+1907.03698v1 2019-07 TrackNet: A Deep Learning Network for Tracking High-speed and Tiny Objects in Sports Applications
+2007.13866v1 2020-07 se(3)-TrackNet: Data-driven 6D Pose Tracking by Calibrating Image Residuals in Synthetic Domains
+### all:jump+AND+all:height+AND+abs:video
+2302.10749v2 2023-02 Quantifying Jump Height Using Markerless Motion Capture with a Single Smartphone
+2505.05907v1 2025-05 AI-assisted Automatic Jump Detection and Height Estimation in Volleyball Using a Waist-worn IMU
+2510.05923v1 2025-10 A Co-Design Framework for Energy-Aware Monoped Jumping with Detailed Actuator Modeling
+1909.02211v2 2019-09 Gravity as a Reference for Estimating a Person's Height from Video
+2312.11340v1 2023-12 Machine Vision-Enabled Sports Performance Analysis
+2309.14341v1 2023-09 Extreme Parkour with Legged Robots
+2503.19917v1 2025-03 A Study on the Matching Rate of Dance Movements Using 2D Skeleton Detection and 3D Pose Estimation: Why Is SEVENTEEN's Performance
+### abs:sports+AND+abs:field+AND+abs:registration
+2504.20052v1 2025-04 Can Geometry Save Central Views for Sports Field Registration?
+2207.11709v2 2022-07 TVCalib: Camera Calibration for Sports Field Registration in Soccer
+1909.08034v2 2019-09 Optimizing Through Learned Errors for Accurate Sports Field Registration
+2404.09807v1 2024-04 A Universal Protocol to Benchmark Camera Calibration for Sports
+2209.07795v1 2022-09 KaliCalib: A Framework for Basketball Court Registration
+2304.04437v1 2023-04 Monocular 3D Human Pose Estimation for Sports Broadcasts using Partial Sports Field Registration
+2404.08401v5 2024-04 PnLCalib: Sports Field Registration via Points and Lines Optimization
+2110.11107v1 2021-10 Extraction of Positional Player Data from Broadcast Soccer Videos
+### abs:ball+AND+abs:detection+AND+abs:small+AND+abs:sports
+2306.14492v1 2023-06 A Badminton Recognition and Tracking System Based on Context Multi-feature Fusion
+2204.00003v3 2022-03 Ball 3D Localization From A Single Calibrated Image
+2606.26780v2 2026-06 Event-based Gaze Control System for Accurate Real-time Spin Estimation in Professional Ball Games
+2409.14543v1 2024-09 TrackNetV4: Enhancing Fast Sports Object Tracking with Motion Attention Maps
+2302.00123v1 2023-01 Design and Implementation of A Soccer Ball Detection System with Multiple Cameras
+2004.09927v1 2020-04 TTNet: Real-time temporal and spatial video analysis of table tennis
+1907.03698v1 2019-07 TrackNet: A Deep Learning Network for Tracking High-speed and Tiny Objects in Sports Applications
+2404.09951v1 2024-04 Unifying Global and Local Scene Entities Modelling for Precise Action Spotting
+2201.00467v1 2022-01 maskGRU: Tracking Small Objects in the Presence of Large Background Motions
+### abs:volleyball+AND+abs:rally
+2209.13846v2 2022-09 VREN: Volleyball Rally Dataset with Expression Notation Language
+2308.11142v1 2023-08 Graph Encoding and Neural Network Approaches for Volleyball Analytics: From Game Outcome to Individual Play Predictions
+2202.13765v4 2022-02 Simple mechanism rules the dynamics of volleyball
+2609.28049v1 2026-09 Prompt, Probe, Train, or Annotate? Single-camera sports video understanding in amateur settings
+2209.12248v1 2022-09 D$^{\bf{3}}$: Duplicate Detection Decontaminator for Multi-Athlete Tracking in Sports Videos
+### abs:volleyball+AND+abs:pose
+1812.10328v1 2018-12 A Multi-Stream Convolutional Neural Network Framework for Group Activity Recognition
+2011.05653v3 2020-11 Skeleton-based Relational Reasoning for Group Activity Analysis
+1810.10658v1 2018-10 Sports Camera Calibration via Synthetic Data
+2108.04186v1 2021-08 Pose is all you need: The pose only group activity recognition system (POGARS)
+2305.16487v2 2023-05 EgoHumans: An Egocentric 3D Multi-Human Benchmark
+2511.00261v2 2025-10 Spot The Ball: A Benchmark for Visual Social Inference
+2305.00620v1 2023-05 Refined Response Distillation for Class-Incremental Player Detection
+2407.19497v2 2024-07 Skeleton-based Group Activity Recognition via Spatial-Temporal Panoramic Graph
+2505.04317v5 2025-05 Mastering Multi-Drone Volleyball through Hierarchical Co-Self-Play Reinforcement Learning
+### abs:WASB
+2311.05237v2 2023-11 Widely Applicable Strong Baseline for Sports Ball Detection and Tracking
+### abs:%22sports+ball+detection%22
+2311.05237v2 2023-11 Widely Applicable Strong Baseline for Sports Ball Detection and Tracking
+### abs:%22action+spotting%22+AND+abs:ball
+2306.05772v2 2023-06 A Boosted Model Ensembling Approach to Ball Action Spotting in Videos: The Runner-Up Solution to CVPR'23 SoccerNet Challenge
+2102.07624v1 2021-02 RMS-Net: Regression and Masking for Soccer Event Spotting
+2309.06006v1 2023-09 SoccerNet 2023 Challenges Results
+2508.01802v2 2025-08 SoccerTrack v2: A Full-Pitch Panoramic Video Dataset for Game State Reconstruction and Ball Action Spotting
+2409.10587v1 2024-09 SoccerNet 2024 Challenges Results
+2607.07320v1 2026-07 SoccerNet 2026 Challenges Results
+2508.11569v1 2025-08 TrajSV: A Trajectory-based Model for Sports Video Representations and Applications
+2606.09679v1 2026-06 SoccerNet 2026 Player-Centric Ball-Action Spotting:Retraining and Post-Processing Extensions to the FOOTPASS Baselines
+2504.12021v1 2025-04 Action Anticipation from SoccerNet Football Video Broadcasts
+2508.19182v1 2025-08 SoccerNet 2025 Challenges Results
+### abs:%22precise+event+spotting%22
+2604.22839v1 2026-04 From Skeletons to Pixels: Few-Shot Precise Event Spotting via Representation and Prediction Distillation
+2404.05392v2 2024-04 T-DEED: Temporal-Discriminability Enhancer Encoder-Decoder for Precise Event Spotting in Sports Videos
+2507.07381v3 2025-07 Multi-Focus Temporal Shifting for Precise Event Spotting in Sports Videos
+2511.14186v1 2025-11 Few-Shot Precise Event Spotting via Unified Multi-Entity Graph and Distillation
+2503.00147v1 2025-02 Precise Event Spotting in Sports Videos: Solving Long-Range Dependency and Class Imbalance
+2607.10998v1 2026-07 Temporal Feature Distillation for Label-Efficient Precise Event Spotting in Sports Videos
+2602.22073v1 2026-02 AdaSpot: Spend Resolution Where It Matters for Precise Event Spotting
+2505.03991v3 2025-05 Deep Learning for Sports Video Event Detection: Tasks, Datasets, Methods, and Challenges
+### abs:%22ball+trajectory%22+AND+abs:monocular
+2107.09255v1 2021-07 Monocular Visual Analysis for Electronic Line Calling of Tennis Games
+2605.01234v2 2026-05 TT4D: A Pipeline and Dataset for Table Tennis 4D Reconstruction From Monocular Videos
+2504.19863v1 2025-04 Towards Ball Spin and Trajectory Analysis in Table Tennis Broadcast Videos via Physically Grounded Synthetic-to-Real Transfer
+### abs:%22serve+speed%22
+2602.08083v2 2026-02 A Unified Server Quality Metric for Tennis
+2610.15629v1 2026-10 The Price of Precision: A Calibrated Cost Model for Mixed-Precision LLM Serving
+2602.06317v3 2026-02 Attention-Mass Condensation for Sparse Decoding
+2608.00881v1 2026-08 AOSpec: Action and Observation Co-Speculation for Low-Latency Agent Serving
+2107.12024v1 2021-07 Leaf-FM: A Learnable Feature Generation Factorization Machine for Click-Through Rate Prediction
+### abs:volleyball+AND+abs:spike
+### abs:%22jump+height%22+AND+abs:pose
+2311.03854v1 2023-11 Design and Experimental Verification of a Jumping Legged Robot for Martian Lava Tube Exploration
+### abs:RTMPose
+2303.07399v2 2023-03 RTMPose: Real-Time Multi-Person Pose Estimation based on MMPose
+2307.15880v2 2023-07 Effective Whole-body Pose Estimation with Two-stages Distillation
+2407.08634v1 2024-07 RTMW: Real-Time Multi-Person 2D and 3D Whole-body Pose Estimation
+2401.10256v1 2023-12 Active headrest combined with a depth camera-based ear-positioning system
+2609.02705v1 2026-09 A Top-Down Framework for Metric-Scale Athlete Localization from Single Broadcast Frames
+2503.18282v2 2025-03 TrackID3x3: A Dataset and Algorithm for Multi-Player Tracking with Identification and Pose Estimation in 3x3 Basketball Full-court
+2603.02598v1 2026-03 Synthetic-Child: An AIGC-Based Synthetic Data Pipeline for Privacy-Preserving Child Posture Estimation
+### abs:badminton+AND+abs:stroke+AND+abs:dataset
+2603.21825v2 2026-03 BadminSense: Enabling Fine-Grained Badminton Stroke Evaluation on a Single Smartwatch
+2306.15664v3 2023-06 Benchmarking Stroke Forecasting with Stroke-Level Badminton Dataset
+2502.21085v4 2025-02 BST: Badminton Stroke-type Transformer for Skeleton-based Action Recognition in Racket Sports
+2605.02558v3 2026-05 TemPose-TF-ASF: Two-Stage Bidirectional Stroke Context Fusion for Badminton Stroke Classification
+2405.11802v1 2024-05 Counterfactual Explanation-Based Badminton Motion Guidance Generation Using Wearable Sensors
+2306.04948v1 2023-06 ShuttleSet: A Human-Annotated Stroke-Level Singles Dataset for Badminton Tactical Analysis
+2112.01044v1 2021-12 ShuttleNet: Position-aware Fusion of Rally Progress and Player Styles for Stroke Forecasting in Badminton
+2605.23355v1 2026-05 Decoupling Spatio-Temporal Adapter for Fine-Grained Badminton Action Localization
+2312.10942v1 2023-12 ShuttleSHAP: A Turn-Based Feature Attribution Approach for Analyzing Forecasting Models in Badminton
+2305.04247v3 2023-05 Estimation of control area in badminton doubles with pose information from top and back view drone videos
