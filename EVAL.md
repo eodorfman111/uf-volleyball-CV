@@ -9,7 +9,7 @@ Every number here comes from a JSON file in `results/` (copied from `runs/`), pr
 | Ball (single frame) | P / R / F1, match if center within max(10 px, box) | public held-out matches 17+18 (167 frames, 167 balls) | D-FINE thr 0.2: P 0.936 R 0.617 F1 0.744; thr 0.5: P 0.977 R 0.497 F1 0.659 | `results/eval_ball_frames_dfine.json` (`scripts/eval_ball_frames.py`) |
 | Ball (trained here) | same | same (train+val 41,459 images, matches 17/18 excluded) | single-frame heatmap net, 1500 steps x 16 at 320 px on CPU (35 min): thr 0.5 P 0.796 R 0.796 F1 0.796, median center error 2.24 px (960 px scale) | `results/train_ball_heatmap.json` (`scripts/train_ball_heatmap.py --steps 1500`) |
 | Ball (temporal, VballNet) | coverage / runtime only | public clip, 991 frames, no labels | 880 frames with a ball, 9.39 s on CPU | `docs/WORKLOG.md` |
-| Players | none (no public end-line player ground truth) | public clip | 11.6 detections/frame mean, 70 track IDs over 33 s (ID switches are frequent) | `runs/public_gtu/track/players.csv` |
+| Players | none (no public end-line player ground truth) | public clip | 11.6 tracked boxes per processed frame (496 frames at stride 2; 11.84 raw detections), 70 track IDs over 33 s (ID switches are frequent) | `runs/public_gtu/track/players.csv` |
 | Rally (frame level) | accuracy / F1 | public rally/no-rally, held-out matches 4, 13, 15 (n=2328, majority baseline 0.5) | acc 0.822, F1 0.833 (raw); 5-frame smoothing hurts: acc 0.661 | `results/eval_rally_frames.json` (`scripts/rally_frame_classifier.py`) |
 | Rally (segments) | none | no public end-line rally-boundary labels | not measured | - |
 | Touch labels | none | no public end-line touch labels | not measured; rules only | - |
