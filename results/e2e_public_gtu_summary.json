@@ -3,47 +3,39 @@
   "duration_s": 33.07,
   "rallies": 1,
   "rally_time_s": 33.033,
-  "contacts": 58,
+  "contacts": 36,
   "touch_labels": {
-    "pass": 22,
-    "extra": 18,
-    "set": 11,
-    "attack": 6,
+    "pass": 13,
+    "extra": 9,
+    "set": 8,
+    "attack": 5,
     "serve": 1
   },
   "serve_speed_kmh": [
-    2.379
+    15.935
   ],
   "jumps": 21,
   "sides": {
     "near": {
       "touches": {
-        "extra": 18,
-        "pass": 10,
-        "set": 7,
-        "attack": 6,
+        "extra": 8,
+        "pass": 7,
+        "set": 4,
+        "attack": 4,
         "serve": 1
       },
       "attack_origin_court_xy": [
         [
-          4.22,
-          4.03
+          4.61,
+          1.45
         ],
         [
-          3.95,
-          2.55
+          4.29,
+          3.54
         ],
         [
-          4.3,
-          2.83
-        ],
-        [
-          3.85,
-          7.18
-        ],
-        [
-          5.69,
-          7.05
+          5.7,
+          6.94
         ],
         [
           5.77,
@@ -55,10 +47,17 @@
     },
     "far": {
       "touches": {
-        "pass": 6,
-        "set": 4
+        "pass": 5,
+        "set": 4,
+        "attack": 1,
+        "extra": 1
       },
-      "attack_origin_court_xy": [],
+      "attack_origin_court_xy": [
+        [
+          5.79,
+          9.08
+        ]
+      ],
       "jumps": 16,
       "jump_height_cm_median": 39.455
     }

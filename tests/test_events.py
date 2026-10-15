@@ -45,3 +45,14 @@ def test_rule_labels():
     rallies = pd.DataFrame({"rally_id": [0], "start_frame": [0], "end_frame": [200]})
     out = label_touches(con, rallies, 1.5, 9.0, 30)
     assert out.label.tolist() == ["serve", "pass", "set", "attack", "block"]
+
+
+def test_drop_static_removes_parked_false_positive():
+    f = np.arange(100)
+    moving = pd.DataFrame({"frame": f, "visible": 1, "x": 100 + f * 7.0, "y": 300.0 + f, "conf": 0.9})
+    parked = pd.DataFrame({"frame": f, "visible": 1, "x": 1500.0, "y": 560.0, "conf": 0.9})
+    from vbcv.stages.track import drop_static
+
+    out = drop_static(pd.concat([moving, parked]), 24, 0.1, 100)
+    assert (out.x == 1500.0).sum() == 0
+    assert len(out) == 100

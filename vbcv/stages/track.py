@@ -6,8 +6,18 @@ from ..court import image_to_court, load_homography
 from .ingest import load_meta
 
 
-def clean_ball(df, max_jump_px, max_gap, min_len):
+def drop_static(df, cell_px, frac, n_frames):
+    if df.empty or not cell_px:
+        return df
+    cell = (df.x // cell_px).astype(int).astype(str) + "_" + (df.y // cell_px).astype(int).astype(str)
+    counts = cell.map(cell.value_counts())
+    return df[counts <= max(frac * n_frames, 1)]
+
+
+def clean_ball(df, max_jump_px, max_gap, min_len, static_cell_px=0, static_frac=1.0):
+    n_frames = len(df)
     df = df[df.visible == 1].sort_values("frame")
+    df = drop_static(df, static_cell_px, static_frac, n_frames)
     keep = []
     last = None
     for r in df.itertuples():
@@ -84,7 +94,7 @@ def run(cfg):
     hpath = stage_dir(cfg, "calibrate") / "homography.json"
     H, _, cam = load_homography(hpath) if hpath.exists() else (None, None, None)
     tb = cfg["track"]["ball"]
-    ball = clean_ball(pd.read_csv(det_dir / "ball.csv"), tb["max_jump_px"], tb["max_gap"], tb["min_len"])
+    ball = clean_ball(pd.read_csv(det_dir / "ball.csv"), tb["max_jump_px"], tb["max_gap"], tb["min_len"], tb.get("static_cell_px", 0), tb.get("static_frac", 1.0))
     ball.to_csv(out / "ball.csv", index=False, float_format="%.2f")
     tp = cfg["track"]["players"]
     raw = pd.read_csv(det_dir / "players.csv")
