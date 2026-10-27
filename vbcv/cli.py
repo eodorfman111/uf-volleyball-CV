@@ -30,14 +30,14 @@ def run_stage(cfg, stage, force=False):
 
 def main(argv=None):
     p = argparse.ArgumentParser(prog="vbcv")
-    p.add_argument("stage", choices=STAGES + ["all"])
+    p.add_argument("stage", nargs="+", choices=STAGES + ["all"])
     p.add_argument("-c", "--config", required=True)
     p.add_argument("--force", action="store_true")
     p.add_argument("--set", nargs="*", default=[], metavar="KEY=VALUE")
     p.add_argument("--continue-on-fail", action="store_true")
     a = p.parse_args(argv)
     cfg = load_config(a.config, a.set)
-    todo = STAGES if a.stage == "all" else [a.stage]
+    todo = STAGES if "all" in a.stage else sorted(set(a.stage), key=STAGES.index)
     ok_all = True
     for s in todo:
         ok = run_stage(cfg, s, force=a.force)

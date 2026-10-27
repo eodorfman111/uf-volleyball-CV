@@ -14,7 +14,8 @@ def detect_ball(cfg, meta, out):
         return 0
     if c["backend"] != "vballnet":
         raise ValueError(f"unknown ball backend {c['backend']}")
-    model = VballNet(c["model"], c["threshold"])
+    providers = ["CUDAExecutionProvider", "CPUExecutionProvider"] if c.get("device") == "cuda" else None
+    model = VballNet(c["model"], c["threshold"], providers)
     rows = model.run_video(frames(meta["video"], meta["start_frame"], meta["end_frame"]), meta["width"], meta["height"])
     df = pd.DataFrame(rows, columns=["frame", "visible", "x", "y", "conf"])
     df.to_csv(out / "ball.csv", index=False, float_format="%.2f")

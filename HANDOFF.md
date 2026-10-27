@@ -17,10 +17,10 @@ Status as of the end of the agent run. Numbers here are copied from `EVAL.md` an
 - **Rally segmentation from ball visibility** is untested on real rallies (the public clip is one continuous drill). On UF film, start by combining the rally frame classifier (`scripts/rally_frame_classifier.py`) with whistle audio.
 - **Touch labels** (serve/pass/set/attack/block) come from simple rules on ball direction changes + nearest player. Treat them as a labeling aid only.
 - **Player identity** across a match (jersey numbers) is not implemented. Track IDs switch often (70 IDs in 33 s of public video).
-- **Serve speed** needs a full camera matrix. It is recovered from the court homography assuming square pixels and a centered principal point; that assumption is unchecked. The old ground-plane proxy (`avg_ground_speed_kmh`) is off by more than +200% and should not be reported.
+- **Serve speed** needs a full camera matrix. It is recovered from the court homography assuming square pixels and a centered principal point; that assumption is unchecked. `stats` now reports the ballistic fit (`ballistic_avg_kmh`, average speed from serve contact to first receive). The old ground-plane proxy (`avg_ground_speed_kmh`) is still written to `events/serves.csv` for reference only; it is off by more than +200% and must not be reported.
 - **Jump height** assumes the feet bbox bottom is tracked every frame; with real bbox jitter the error will be larger than the synthetic numbers.
 - **D-FINE tiled inference** from its model card is not implemented (full-frame only), which likely costs small-ball recall.
-- **SLURM scripts** were written from the UF RC documentation but never submitted. `--gpus=1` with no partition gets an L4 per the docs; change it if your group uses another partition.
+- **SLURM scripts** were written from the UF RC documentation but never submitted. Only `detect` requests a GPU (`slurm/stage_gpu.sbatch`); everything else runs on CPU (`slurm/stage.sbatch`) so no GPU sits idle. Set `SBATCH_ACCOUNT` and `SBATCH_PARTITION` (no partition or account is hardcoded) and check the partition's GPU type with Research Computing. `setup_env.sh` swaps in `onnxruntime-gpu` so VballNet can use the GPU; if the CUDA provider fails to load it silently falls back to CPU, so read the provider line printed at the top of the detect log.
 - `scripts/trace_court_lines.py` (automatic line tracing) failed on the public clip; manual clicking is the supported path.
 
 ## Rerun everything
@@ -39,7 +39,7 @@ Public data: Hugging Face `GYdevy/volleyball-big-ds` (ball, MIT) and `GYdevy/vol
 ## New UF match on HiPerGator
 1. Copy video to `/blue/<group>/<user>/film/`. Make `configs/<match>.yaml` (copy `configs/public_gtu.yaml`, change `name`, `video`, `court.points_file`).
 2. Click court points once per camera setup (`scripts/click_court.py`, use `--holdout`).
-3. `STAGE=all CONFIG=configs/<match>.yaml sbatch slurm/stage.sbatch`.
+3. `bash slurm/submit_match.sh configs/<match>.yaml` (chains CPU -> GPU -> CPU jobs).
 4. Check `runs/<match>/calibrate/overlay.jpg` and `python scripts/render_overlay.py -c configs/<match>.yaml` before trusting any stat.
 
 ## Ranked next steps

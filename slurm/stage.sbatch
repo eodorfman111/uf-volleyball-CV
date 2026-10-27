@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=vbcv-stage
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=32gb
-#SBATCH --time=04:00:00
-#SBATCH --gpus=1
+#SBATCH --job-name=vbcv-cpu
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16gb
+#SBATCH --time=02:00:00
 #SBATCH --output=logs/%x-%j.out
 set -euo pipefail
 source slurm/common.sh
-STAGE=${STAGE:?set STAGE=ingest|calibrate|detect|track|events|stats|all}
+STAGES=${STAGES:?set STAGES="ingest calibrate" or "track events stats"}
 CONFIG=${CONFIG:?set CONFIG=configs/xxx.yaml}
-python -m vbcv "$STAGE" -c "$CONFIG" --set detect.players.device=cuda ${EXTRA:-}
+python -m vbcv $STAGES -c "$CONFIG" ${EXTRA:-}

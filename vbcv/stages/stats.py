@@ -30,7 +30,7 @@ def rally_table(rallies, contacts, serves):
                 "serve_side": g.side.iloc[0] if len(g) and isinstance(g.side.iloc[0], str) else None,
                 "n_attacks": int((g.label == "attack").sum()),
                 "n_blocks": int((g.label == "block").sum()),
-                "serve_speed_kmh": float(s.avg_ground_speed_kmh.iloc[0]) if len(s) else np.nan,
+                "serve_speed_kmh": float(s.ballistic_avg_kmh.iloc[0]) if len(s) else np.nan,
             }
         )
     return pd.DataFrame(rows)
@@ -74,7 +74,7 @@ def run(cfg):
         "rally_time_s": _num(rt.duration_s.sum()) if len(rt) else 0,
         "contacts": len(contacts),
         "touch_labels": {k: int(v) for k, v in contacts.label.value_counts().items()} if len(contacts) else {},
-        "serve_speed_kmh": [_num(v) for v in serves.avg_ground_speed_kmh] if len(serves) else [],
+        "serve_speed_kmh": [_num(v) for v in serves.ballistic_avg_kmh] if len(serves) else [],
         "jumps": len(jumps),
         "sides": side_aggregates(contacts, jumps),
     }

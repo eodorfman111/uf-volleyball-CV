@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import yaml
@@ -22,6 +23,7 @@ DEFAULTS = {
             "backend": "vballnet",
             "model": "models/VballNetV4c_seq9_grayscale_20260908_213829.onnx",
             "threshold": 0.5,
+            "device": "cpu",
         },
         "players": {
             "backend": "dfine",
@@ -33,7 +35,7 @@ DEFAULTS = {
     },
     "track": {
         "ball": {"max_jump_px": 120, "max_gap": 8, "min_len": 5, "static_cell_px": 24, "static_frac": 0.03},
-        "players": {"court_margin_m": 1.5, "max_per_side": 8, "track_buffer": 30},
+        "players": {"court_margin_m": 1.5, "track_buffer": 30},
     },
     "events": {
         "rally": {"min_ball_ratio": 0.5, "window_s": 1.0, "min_rally_s": 2.0, "merge_gap_s": 1.5, "pad_s": 1.0},
@@ -69,6 +71,8 @@ def load_config(path, overrides=()):
     for item in overrides:
         k, v = item.split("=", 1)
         set_dotted(cfg, k, v)
+    if isinstance(cfg.get("video"), str):
+        cfg["video"] = os.path.expanduser(os.path.expandvars(cfg["video"]))
     cfg["_config_path"] = str(Path(path).resolve())
     return cfg
 
@@ -77,6 +81,8 @@ def run_dir(cfg):
     return Path(cfg["runs_root"]) / cfg["name"]
 
 
-def section_hash(cfg, keys):
+def section_hash(cfg, keys, files=None):
     payload = {k: cfg.get(k) for k in keys}
+    if files:
+        payload["_files"] = files
     return hashlib.sha1(json.dumps(payload, sort_keys=True, default=str).encode()).hexdigest()[:12]

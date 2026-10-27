@@ -22,8 +22,9 @@ Outputs land in `runs/public_gtu/<stage>/`. Each stage writes `_done.json`; reru
 ## HiPerGator
 ```
 bash slurm/setup_env.sh                       # once: conda env + models
-STAGE=all CONFIG=configs/<match>.yaml sbatch slurm/stage.sbatch
-LIST=configs/matches.txt sbatch --array=1-$(wc -l < configs/matches.txt) slurm/match_array.sbatch
+export SBATCH_ACCOUNT=<group> SBATCH_PARTITION=<partition>   # confirm both with Research Computing
+bash slurm/submit_match.sh configs/<match>.yaml               # CPU ingest+calibrate -> GPU detect -> CPU track+events+stats
+STAGES="track events stats" CONFIG=configs/<match>.yaml sbatch slurm/stage.sbatch   # rerun CPU stages only
 DATA=/blue/<group>/<user>/ball_ds sbatch slurm/train_ball.sbatch
 ```
 

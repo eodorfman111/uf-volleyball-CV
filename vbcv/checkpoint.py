@@ -1,3 +1,4 @@
+import hashlib
 import json
 import subprocess
 import time
@@ -6,6 +7,10 @@ from pathlib import Path
 from .config import run_dir, section_hash
 
 STAGES = ["ingest", "calibrate", "detect", "track", "events", "stats"]
+STAGE_FILES = {
+    "calibrate": [("court", "points_file")],
+    "detect": [("detect", "ball", "model")],
+}
 STAGE_KEYS = {
     "ingest": ["video", "ingest"],
     "calibrate": ["court"],
@@ -29,10 +34,27 @@ def stage_dir(cfg, stage):
     return d
 
 
+def file_digest(path):
+    if not path or not Path(path).is_file():
+        return None
+    h = hashlib.sha1()
+    with Path(path).open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()[:12]
+
+
 def stage_hash(cfg, stage):
     upstream = STAGES[: STAGES.index(stage) + 1]
     keys = sorted({k for s in upstream for k in STAGE_KEYS[s]})
-    return section_hash(cfg, keys)
+    files = {}
+    for s in upstream:
+        for path in STAGE_FILES.get(s, []):
+            node = cfg
+            for k in path:
+                node = (node or {}).get(k)
+            files["/".join(path)] = file_digest(node)
+    return section_hash(cfg, keys, files)
 
 
 def is_done(cfg, stage):
