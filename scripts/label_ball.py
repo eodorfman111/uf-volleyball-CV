@@ -30,7 +30,7 @@ def main():
     p.add_argument("--step", type=int, default=10)
     p.add_argument("--pred", default=None)
     a = p.parse_args()
-    cache = dict(frames(a.video, a.start, a.end, a.step))
+    cache = {i: cv2.imencode(".jpg", fr, [cv2.IMWRITE_JPEG_QUALITY, 95])[1] for i, fr in frames(a.video, a.start, a.end, a.step)}
     todo = sorted(cache)
     labels = {}
     if Path(a.out).exists():
@@ -50,7 +50,7 @@ def main():
     while 0 <= i < len(todo):
         f = todo[i]
         if shown != i:
-            img = cache[f]
+            img = cv2.imdecode(cache[f], cv2.IMREAD_COLOR)
             shown = i
             clicks.clear()
             if img is None:
