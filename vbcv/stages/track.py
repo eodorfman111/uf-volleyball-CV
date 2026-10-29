@@ -78,6 +78,26 @@ def track_players(df, fps, stride, buffer):
     return pd.DataFrame(rows, columns=["frame", "track_id", "x1", "y1", "x2", "y2", "score"])
 
 
+def drop_persistent(df, pcfg, court):
+    frac = pcfg.get("persistent_frac")
+    if df.empty or not frac or df.court_x.isna().all():
+        return df
+    cell = pcfg.get("persistent_cell_m", 0.5)
+    edge = pcfg.get("persistent_edge_m", 1.5)
+    ix = np.floor(df.court_x / cell).astype(int)
+    iy = np.floor(df.court_y / cell).astype(int)
+    key = (ix + 1000) * 100000 + (iy + 1000)
+    share = df.groupby(key).frame.nunique() / df.frame.nunique()
+    ids = share.index.to_numpy()
+    cx = (ids // 100000 - 1000 + 0.5) * cell
+    cy = (ids % 100000 - 1000 + 0.5) * cell
+    edge_dist = np.minimum.reduce([cx, court["width_m"] - cx, cy, court["length_m"] - cy])
+    flagged = ids[(share.to_numpy() >= frac) & (edge_dist <= edge)]
+    df = df.copy()
+    df["on_court"] = df.on_court & ~key.isin(flagged)
+    return df
+
+
 def add_court(df, H, cfg, cam=None):
     c = cfg["court"]
     margin = cfg["track"]["players"]["court_margin_m"]
@@ -91,6 +111,7 @@ def add_court(df, H, cfg, cam=None):
         df["side"] = "unknown"
         return df
     df["on_court"] = (df.court_x > -margin) & (df.court_x < c["width_m"] + margin) & (df.court_y > -margin) & (df.court_y < c["length_m"] + margin)
+    df = drop_persistent(df, cfg["track"]["players"], c)
     df["side"] = np.where(df.court_y < c["length_m"] / 2, "near", "far")
     return df
 

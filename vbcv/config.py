@@ -35,7 +35,7 @@ DEFAULTS = {
     },
     "track": {
         "ball": {"max_jump_px": 120, "max_gap": 8, "min_len": 5, "static_cell_px": 24, "static_frac": 0.03, "roi": None},
-        "players": {"court_margin_m": 1.5, "track_buffer": 30},
+        "players": {"court_margin_m": 1.5, "track_buffer": 30, "persistent_frac": None, "persistent_cell_m": 0.5, "persistent_edge_m": 1.5},
     },
     "events": {
         "rally": {"min_ball_ratio": 0.5, "window_s": 1.0, "min_rally_s": 2.0, "merge_gap_s": 1.5, "pad_s": 1.0},
