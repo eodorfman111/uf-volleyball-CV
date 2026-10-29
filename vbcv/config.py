@@ -34,7 +34,7 @@ DEFAULTS = {
         },
     },
     "track": {
-        "ball": {"max_jump_px": 120, "max_gap": 8, "min_len": 5, "static_cell_px": 24, "static_frac": 0.03},
+        "ball": {"max_jump_px": 120, "max_gap": 8, "min_len": 5, "static_cell_px": 24, "static_frac": 0.03, "roi": None},
         "players": {"court_margin_m": 1.5, "track_buffer": 30},
     },
     "events": {

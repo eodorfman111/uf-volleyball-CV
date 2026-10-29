@@ -38,7 +38,7 @@ Public data: Hugging Face `GYdevy/volleyball-big-ds` (ball, MIT) and `GYdevy/vol
 
 ## New UF match on HiPerGator
 1. Copy video to `/blue/<group>/<user>/film/`. Make `configs/<match>.yaml` (copy `configs/public_gtu.yaml`, change `name`, `video`, `court.points_file`).
-2. Click court points once per camera setup (`scripts/click_court.py`, use `--holdout`).
+2. Click court points once per camera setup (`scripts/click_court.py`, use `--holdout`). Then click the ball region, the playing area plus the air above it and excluding the crowd and ad boards (`python scripts/click_polygon.py <video> configs/<match>.yaml`, which writes `track.ball.roi`). Without it the ball detector can lock onto the crowd. For officials standing near the court, set `track.players.court_margin_m` to about 0.5 in the match config. Review frames with `python scripts/view_media.py <jpg or mp4>`.
 3. `bash slurm/submit_match.sh configs/<match>.yaml` (chains CPU -> GPU -> CPU jobs).
 4. Check `runs/<match>/calibrate/overlay.jpg` and `python scripts/render_overlay.py -c configs/<match>.yaml` before trusting any stat.
 

@@ -2,6 +2,17 @@ from vbcv.checkpoint import stage_hash
 from vbcv.config import load_config
 
 
+def test_ball_roi_is_off_by_default_and_changes_track_hash(tmp_path):
+    base = tmp_path / "a.yaml"
+    base.write_text("name: t\n")
+    with_roi = tmp_path / "b.yaml"
+    with_roi.write_text("name: t\ntrack:\n  ball:\n    roi: [[0, 0], [10, 0], [10, 10]]\n")
+    a, b = load_config(base), load_config(with_roi)
+    assert a["track"]["ball"]["roi"] is None
+    assert stage_hash(a, "track") != stage_hash(b, "track")
+    assert stage_hash(a, "detect") == stage_hash(b, "detect")
+
+
 def test_editing_court_points_invalidates_downstream_stages(tmp_path):
     pts = tmp_path / "pts.yaml"
     pts.write_text("points: {}\n")

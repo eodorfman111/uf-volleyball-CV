@@ -146,15 +146,27 @@ def serve_speeds(contacts, fps, ball=None, P=None):
         s, r = g.iloc[0], g.iloc[1]
         dt = (r.frame - s.frame) / fps
         d = float(np.hypot(r.court_x - s.court_x, r.court_y - s.court_y)) if dt > 0 and not (np.isnan(s.court_x) or np.isnan(r.court_x)) else np.nan
-        v3d, rms = np.nan, np.nan
+        v3d, rms, status = np.nan, np.nan, "no_camera"
         if P is not None and ball is not None:
             seg = ball[(ball.frame >= s.frame) & (ball.frame <= r.frame)]
+            status = "short_segment"
             if len(seg) >= 6:
                 fit = fit_ballistic(P, seg.frame.to_numpy() / fps, seg[["x", "y"]].to_numpy())
-                v3d, rms = fit["avg_kmh"], fit["rms_px"]
-        rows.append((rid, int(s.frame), int(r.frame), dt, d, d / dt * 3.6 if dt > 0 else np.nan, v3d, rms))
+                v3d, rms, status = fit["avg_kmh"], fit["rms_px"], "ok"
+        rows.append((rid, int(s.frame), int(r.frame), dt, d, d / dt * 3.6 if dt > 0 else np.nan, v3d, rms, status))
     return pd.DataFrame(
-        rows, columns=["rally_id", "serve_frame", "receive_frame", "flight_s", "ground_dist_m", "avg_ground_speed_kmh", "ballistic_avg_kmh", "ballistic_rms_px"]
+        rows,
+        columns=[
+            "rally_id",
+            "serve_frame",
+            "receive_frame",
+            "flight_s",
+            "ground_dist_m",
+            "avg_ground_speed_kmh",
+            "ballistic_avg_kmh",
+            "ballistic_rms_px",
+            "fit_status",
+        ],
     )
 
 
@@ -230,4 +242,5 @@ def run(cfg):
     serves.to_csv(out / "serves.csv", index=False, float_format="%.3f")
     jumps = find_jumps(players, meta["fps"], ec["jump"])
     jumps.to_csv(out / "jumps.csv", index=False, float_format="%.3f")
-    return {"rallies": len(rallies), "contacts": len(contacts), "serves": len(serves), "jumps": len(jumps)}
+    fit_status = {k: int(v) for k, v in serves.fit_status.value_counts().items()} if len(serves) else {}
+    return {"rallies": len(rallies), "contacts": len(contacts), "serves": len(serves), "jumps": len(jumps), "camera_ok": P is not None, "serve_fit": fit_status}

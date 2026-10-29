@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from vbcv.stages.events import find_contacts, label_touches, segment_rallies
+from vbcv.stages.events import find_contacts, label_touches, segment_rallies, serve_speeds
 from vbcv.stages.track import clean_ball
 
 
@@ -13,6 +13,25 @@ def test_clean_ball_drops_outlier_and_interpolates():
     out = clean_ball(df, max_jump_px=50, max_gap=4, min_len=3)
     assert len(out) == 20
     assert out.x.max() < 200
+
+
+def test_clean_ball_roi_drops_detections_outside_polygon():
+    f = np.arange(20)
+    ball = pd.DataFrame({"frame": f, "visible": 1, "x": 100 + f * 5.0, "y": 300.0, "conf": 0.9})
+    roi = [[0, 200], [400, 200], [400, 400], [0, 400]]
+    assert len(clean_ball(ball, 50, 4, 3, roi=roi)) == 20
+    crowd = ball.assign(y=50.0)
+    assert clean_ball(crowd, 50, 4, 3, roi=roi).empty
+    assert len(clean_ball(crowd, 50, 4, 3)) == 20
+
+
+def test_serve_speed_reports_why_fit_is_missing():
+    con = pd.DataFrame(
+        {"rally_id": [0, 0], "frame": [10, 40], "label": ["serve", "pass"], "court_x": [4.0, 5.0], "court_y": [-1.0, 12.0]},
+    )
+    out = serve_speeds(con, 30.0)
+    assert out.fit_status.tolist() == ["no_camera"]
+    assert np.isnan(out.ballistic_avg_kmh.iloc[0])
 
 
 def test_segment_rallies():

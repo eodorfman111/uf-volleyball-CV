@@ -1,3 +1,4 @@
+import cv2
 import numpy as np
 import pandas as pd
 
@@ -14,9 +15,18 @@ def drop_static(df, cell_px, frac, n_frames):
     return df[counts <= max(frac * n_frames, 1)]
 
 
-def clean_ball(df, max_jump_px, max_gap, min_len, static_cell_px=0, static_frac=1.0):
+def in_roi(df, roi):
+    if df.empty or not roi:
+        return df
+    poly = np.asarray(roi, dtype=np.float32).reshape(-1, 1, 2)
+    keep = [cv2.pointPolygonTest(poly, (float(x), float(y)), False) >= 0 for x, y in zip(df.x, df.y)]
+    return df[keep]
+
+
+def clean_ball(df, max_jump_px, max_gap, min_len, static_cell_px=0, static_frac=1.0, roi=None):
     n_frames = len(df)
     df = df[df.visible == 1].sort_values("frame")
+    df = in_roi(df, roi)
     df = drop_static(df, static_cell_px, static_frac, n_frames)
     keep = []
     last = None
@@ -93,7 +103,13 @@ def run(cfg):
     H, _, cam = load_homography(hpath) if hpath.exists() else (None, None, None)
     tb = cfg["track"]["ball"]
     ball = clean_ball(
-        pd.read_csv(det_dir / "ball.csv"), tb["max_jump_px"], tb["max_gap"], tb["min_len"], tb.get("static_cell_px", 0), tb.get("static_frac", 1.0)
+        pd.read_csv(det_dir / "ball.csv"),
+        tb["max_jump_px"],
+        tb["max_gap"],
+        tb["min_len"],
+        tb.get("static_cell_px", 0),
+        tb.get("static_frac", 1.0),
+        tb.get("roi"),
     )
     ball.to_csv(out / "ball.csv", index=False, float_format="%.2f")
     tp = cfg["track"]["players"]
