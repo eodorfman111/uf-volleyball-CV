@@ -24,6 +24,7 @@ DEFAULTS = {
             "model": "models/VballNetV4c_seq9_grayscale_20260908_213829.onnx",
             "threshold": 0.5,
             "device": "cpu",
+            "input_size": [960, 540],
         },
         "players": {
             "backend": "dfine",

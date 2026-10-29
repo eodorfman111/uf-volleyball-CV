@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ..ball import VballNet
+from ..ball import HeatmapBall, VballNet
 from ..checkpoint import stage_dir
 from ..players import make_detector
 from ..video import frames
@@ -12,10 +12,13 @@ def detect_ball(cfg, meta, out):
     if c["backend"] == "none":
         pd.DataFrame(columns=["frame", "visible", "x", "y", "conf"]).to_csv(out / "ball.csv", index=False)
         return 0
-    if c["backend"] != "vballnet":
+    if c["backend"] == "heatmap":
+        model = HeatmapBall(c["model"], c["threshold"], c.get("device", "cpu"), c.get("input_size", (960, 540)))
+    elif c["backend"] == "vballnet":
+        providers = ["CUDAExecutionProvider", "CPUExecutionProvider"] if c.get("device") == "cuda" else None
+        model = VballNet(c["model"], c["threshold"], providers)
+    else:
         raise ValueError(f"unknown ball backend {c['backend']}")
-    providers = ["CUDAExecutionProvider", "CPUExecutionProvider"] if c.get("device") == "cuda" else None
-    model = VballNet(c["model"], c["threshold"], providers)
     rows = model.run_video(frames(meta["video"], meta["start_frame"], meta["end_frame"]), meta["width"], meta["height"])
     df = pd.DataFrame(rows, columns=["frame", "visible", "x", "y", "conf"])
     df.to_csv(out / "ball.csv", index=False, float_format="%.2f")

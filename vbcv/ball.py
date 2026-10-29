@@ -80,3 +80,50 @@ class VballNet:
             else:
                 rows.append((idx, 1, d[0] * sx, d[1] * sy, d[2]))
         return rows
+
+
+class HeatmapBall:
+    def __init__(self, checkpoint, threshold=0.5, device="cpu", input_size=(960, 540), width=16):
+        import torch
+
+        from .heatnet import HeatNet
+
+        self.torch = torch
+        self.device = device
+        self.threshold = threshold
+        self.w, self.h = int(input_size[0]), int(input_size[1])
+        self.net = HeatNet(width).to(device).eval()
+        state = torch.load(checkpoint, map_location=device)
+        self.net.load_state_dict(state["model"] if "model" in state else state)
+
+    def prep(self, frame):
+        return np.ascontiguousarray(cv2.resize(frame, (self.w, self.h)).astype(np.float32).transpose(2, 0, 1) / 255.0)
+
+    def decode(self, hm):
+        v, i = hm.flatten().max(0)
+        v, i = float(v), int(i)
+        if v < self.threshold:
+            return None
+        return float(i % self.w), float(i // self.w), v
+
+    def run_video(self, frame_iter, width, height, batch=8):
+        sx, sy = width / self.w, height / self.h
+        rows, idxs, buf = [], [], []
+
+        def flush():
+            x = self.torch.from_numpy(np.stack(buf)).to(self.device)
+            with self.torch.no_grad():
+                hms = self.torch.sigmoid(self.net(x))[:, 0].cpu()
+            for idx, hm in zip(idxs, hms):
+                d = self.decode(hm)
+                rows.append((idx, 0, -1.0, -1.0, 0.0) if d is None else (idx, 1, d[0] * sx, d[1] * sy, d[2]))
+
+        for idx, frame in frame_iter:
+            buf.append(self.prep(frame))
+            idxs.append(idx)
+            if len(buf) == batch:
+                flush()
+                buf, idxs = [], []
+        if buf:
+            flush()
+        return rows
