@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 
 import cv2
@@ -12,7 +13,11 @@ class VballNet:
         self.path = Path(model_path)
         meta_path = self.path.with_suffix(".json")
         self.meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
-        self.sess = ort.InferenceSession(str(self.path), providers=providers or ["CPUExecutionProvider"])
+        opts = ort.SessionOptions()
+        threads = int(os.environ.get("SLURM_CPUS_PER_TASK", 0))
+        if threads:
+            opts.intra_op_num_threads = threads
+        self.sess = ort.InferenceSession(str(self.path), sess_options=opts, providers=providers or ["CPUExecutionProvider"])
         inp = self.sess.get_inputs()[0]
         out = self.sess.get_outputs()[0]
         self.input_name = inp.name
