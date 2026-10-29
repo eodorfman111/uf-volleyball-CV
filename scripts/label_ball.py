@@ -6,7 +6,7 @@ import cv2
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from vbcv.video import read_frame
+from vbcv.video import frames
 
 
 def load_pred(path):
@@ -30,7 +30,8 @@ def main():
     p.add_argument("--step", type=int, default=10)
     p.add_argument("--pred", default=None)
     a = p.parse_args()
-    todo = list(range(a.start, a.end, a.step))
+    cache = dict(frames(a.video, a.start, a.end, a.step))
+    todo = sorted(cache)
     labels = {}
     if Path(a.out).exists():
         old = pd.read_csv(a.out)
@@ -49,7 +50,7 @@ def main():
     while 0 <= i < len(todo):
         f = todo[i]
         if shown != i:
-            img = read_frame(a.video, f)
+            img = cache[f]
             shown = i
             clicks.clear()
             if img is None:
