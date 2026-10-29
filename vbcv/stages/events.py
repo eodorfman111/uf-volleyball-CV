@@ -15,8 +15,20 @@ def segment_rallies(ball, meta, c):
     n0, n1 = meta["start_frame"], meta["end_frame"]
     vis = np.zeros(n1 - n0)
     if len(ball):
-        idx = ball.frame.to_numpy(int) - n0
-        vis[idx[(idx >= 0) & (idx < len(vis))]] = 1
+        b = ball.sort_values("frame")
+        idx = b.frame.to_numpy(int) - n0
+        ok = (idx >= 0) & (idx < len(vis))
+        min_speed = c.get("min_speed_px", 0)
+        if min_speed and len(b) > 1:
+            f, bx, by = b.frame.to_numpy(float), b.x.to_numpy(float), b.y.to_numpy(float)
+            segs = b.seg.to_numpy() if "seg" in b else np.zeros(len(b), int)
+            speed = np.zeros(len(b))
+            for s in np.unique(segs):
+                m = np.flatnonzero(segs == s)
+                if len(m) > 1:
+                    speed[m] = np.hypot(np.gradient(bx[m], f[m]), np.gradient(by[m], f[m]))
+            ok &= speed >= min_speed
+        vis[idx[ok]] = 1
     w = max(1, int(round(c["window_s"] * fps)))
     ratio = np.convolve(vis, np.ones(w) / w, mode="same")
     active = ratio >= c["min_ball_ratio"]

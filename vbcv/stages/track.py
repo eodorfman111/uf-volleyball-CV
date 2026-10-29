@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
+from ..arcfit import arc_filter_mask
 from ..checkpoint import stage_dir
 from ..court import image_to_court, load_homography
 from .ingest import load_meta
@@ -23,11 +24,13 @@ def in_roi(df, roi):
     return df[keep]
 
 
-def clean_ball(df, max_jump_px, max_gap, min_len, static_cell_px=0, static_frac=1.0, roi=None):
+def clean_ball(df, max_jump_px, max_gap, min_len, static_cell_px=0, static_frac=1.0, roi=None, arc=None):
     n_frames = len(df)
     df = df[df.visible == 1].sort_values("frame")
     df = in_roi(df, roi)
     df = drop_static(df, static_cell_px, static_frac, n_frames)
+    if arc and not df.empty:
+        df = df[arc_filter_mask(df.frame.to_numpy(), df.x.to_numpy(), df.y.to_numpy(), **arc)]
     keep = []
     last = None
     for r in df.itertuples():
@@ -58,6 +61,19 @@ def clean_ball(df, max_jump_px, max_gap, min_len, static_cell_px=0, static_frac=
     out = pd.concat(parts, ignore_index=True)
     out["seg"] = pd.factorize(out.seg)[0]
     return out
+
+
+def ball_track(det, tb):
+    return clean_ball(
+        det,
+        tb["max_jump_px"],
+        tb["max_gap"],
+        tb["min_len"],
+        tb.get("static_cell_px", 0),
+        tb.get("static_frac", 1.0),
+        tb.get("roi"),
+        tb.get("arc"),
+    )
 
 
 def track_players(df, fps, stride, buffer):
@@ -123,15 +139,7 @@ def run(cfg):
     hpath = stage_dir(cfg, "calibrate") / "homography.json"
     H, _, cam = load_homography(hpath) if hpath.exists() else (None, None, None)
     tb = cfg["track"]["ball"]
-    ball = clean_ball(
-        pd.read_csv(det_dir / "ball.csv"),
-        tb["max_jump_px"],
-        tb["max_gap"],
-        tb["min_len"],
-        tb.get("static_cell_px", 0),
-        tb.get("static_frac", 1.0),
-        tb.get("roi"),
-    )
+    ball = ball_track(pd.read_csv(det_dir / "ball.csv"), tb)
     ball.to_csv(out / "ball.csv", index=False, float_format="%.2f")
     tp = cfg["track"]["players"]
     raw = pd.read_csv(det_dir / "players.csv")

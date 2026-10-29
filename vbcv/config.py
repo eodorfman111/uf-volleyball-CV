@@ -34,11 +34,11 @@ DEFAULTS = {
         },
     },
     "track": {
-        "ball": {"max_jump_px": 120, "max_gap": 8, "min_len": 5, "static_cell_px": 24, "static_frac": 0.03, "roi": None},
+        "ball": {"max_jump_px": 120, "max_gap": 8, "min_len": 5, "static_cell_px": 24, "static_frac": 0.03, "roi": None, "arc": None},
         "players": {"court_margin_m": 1.5, "track_buffer": 30, "persistent_frac": None, "persistent_cell_m": 0.5, "persistent_edge_m": 1.5},
     },
     "events": {
-        "rally": {"min_ball_ratio": 0.5, "window_s": 1.0, "min_rally_s": 2.0, "merge_gap_s": 1.5, "pad_s": 1.0},
+        "rally": {"min_ball_ratio": 0.5, "window_s": 1.0, "min_rally_s": 2.0, "merge_gap_s": 1.5, "pad_s": 1.0, "min_speed_px": 0},
         "contact": {"min_angle_deg": 35, "min_speed_px": 2.0, "max_player_dist_m": 1.5, "min_sep_frames": 6},
         "jump": {"min_rise_frac": 0.12, "edge_rise_frac": 0.005, "min_air_s": 0.25, "max_air_s": 1.2},
     },
@@ -60,7 +60,10 @@ def set_dotted(cfg, key, value):
     node = cfg
     parts = key.split(".")
     for p in parts[:-1]:
-        node = node.setdefault(p, {})
+        nxt = node.get(p)
+        if not isinstance(nxt, dict):
+            nxt = node[p] = {}
+        node = nxt
     node[parts[-1]] = yaml.safe_load(value)
 
 

@@ -34,6 +34,27 @@ def test_serve_speed_reports_why_fit_is_missing():
     assert np.isnan(out.ballistic_avg_kmh.iloc[0])
 
 
+def test_speed_gate_ignores_a_held_ball():
+    meta = {"fps": 10.0, "start_frame": 0, "end_frame": 200}
+    f = np.arange(0, 200)
+    x = np.where(f < 100, 500.0, 500.0 + (f - 100) * 10.0)
+    ball = pd.DataFrame({"frame": f, "x": x, "y": 300.0})
+    c = {"min_ball_ratio": 0.5, "window_s": 1.0, "min_rally_s": 2.0, "merge_gap_s": 1.0, "pad_s": 0.0}
+    plain = segment_rallies(ball, meta, c)
+    gated = segment_rallies(ball, meta, dict(c, min_speed_px=3.0))
+    assert len(plain) == 1 and plain.start_frame.iloc[0] < 20
+    assert len(gated) == 1 and gated.start_frame.iloc[0] >= 90
+
+
+def test_speed_gate_does_not_blend_speeds_across_ball_segments():
+    meta = {"fps": 10.0, "start_frame": 0, "end_frame": 40}
+    f = np.array(list(range(0, 10)) + list(range(20, 30)))
+    x = np.where(f < 10, 500.0, 1500.0)
+    ball = pd.DataFrame({"frame": f, "x": x, "y": 300.0, "seg": np.where(f < 10, 0, 1)})
+    c = {"min_ball_ratio": 0.5, "window_s": 0.1, "min_rally_s": 0.0, "merge_gap_s": 0.0, "pad_s": 0.0, "min_speed_px": 3.0}
+    assert len(segment_rallies(ball, meta, c)) == 0
+
+
 def test_segment_rallies():
     meta = {"fps": 10.0, "start_frame": 0, "end_frame": 200}
     ball = pd.DataFrame({"frame": list(range(20, 80)) + list(range(120, 180))})
