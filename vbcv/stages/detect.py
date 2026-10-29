@@ -13,7 +13,7 @@ def detect_ball(cfg, meta, out):
         pd.DataFrame(columns=["frame", "visible", "x", "y", "conf"]).to_csv(out / "ball.csv", index=False)
         return 0
     if c["backend"] == "heatmap":
-        model = HeatmapBall(c["model"], c["threshold"], c.get("device", "cpu"), c.get("input_size", (960, 540)))
+        model = HeatmapBall(c["model"], c["threshold"], c.get("device", "cpu"), c.get("input_size", (1280, 720)))
     elif c["backend"] == "vballnet":
         providers = ["CUDAExecutionProvider", "CPUExecutionProvider"] if c.get("device") == "cuda" else None
         model = VballNet(c["model"], c["threshold"], providers)

@@ -83,7 +83,7 @@ class VballNet:
 
 
 class HeatmapBall:
-    def __init__(self, checkpoint, threshold=0.5, device="cpu", input_size=(960, 540), width=16):
+    def __init__(self, checkpoint, threshold=0.5, device="cpu", input_size=(1280, 720), width=16):
         import torch
 
         from .heatnet import HeatNet

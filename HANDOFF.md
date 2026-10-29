@@ -42,6 +42,14 @@ Public data: Hugging Face `GYdevy/volleyball-big-ds` (ball, MIT) and `GYdevy/vol
 3. `bash slurm/submit_match.sh configs/<match>.yaml` (chains CPU -> GPU -> CPU jobs).
 4. Check `runs/<match>/calibrate/overlay.jpg` and `python scripts/render_overlay.py -c configs/<match>.yaml` before trusting any stat.
 
+## Training the heatmap ball model on public plus UF frames
+The public dataset is a 16:9 frame squashed into a square, and its ball is about twice as large (relative to the frame) as in a far, elevated arena camera. `scripts/train_ball_heatmap.py` therefore trains at the natural aspect (`--input 640 360`) and loads your own frames at twice that scale and randomly crops them (`--extra-scale 2`), so one network sees the same pixel scale in both; inference runs at 1280x720 (`detect.ball.input_size`).
+1. Label training frames with `scripts/label_ball.py` (`n` marks a no-ball frame, which becomes an explicit negative such as the crowd), keeping them away from the frames you score on.
+2. `python scripts/export_ball_labels.py <video> labels_train.csv /blue/<group>/<user>/uf_train --max-frame <N>`
+3. `DATA=<public ball_ds> OUT=<run dir> EXTRA="--steps 6000 --extra /blue/<group>/<user>/uf_train --extra-repeat 10" sbatch --time=01:30:00 slurm/train_ball.sbatch`. To continue from an earlier checkpoint, copy its `last.pt` into the new `OUT` first; training resumes from its step count, so set `--steps` above it.
+4. Point `detect.ball` at it (`backend: heatmap`, `model: <OUT>/last.pt`), run `detect`, and score with `scripts/score_ball.py labels.csv runs/<match>/detect/ball.csv --min-frame <first test frame>`.
+The model trained on public data alone fires on the crowd on nearly every frame of the UF test clip (F1 0.0 against hand labels), so the UF frames and negatives are what make it usable.
+
 ## Ranked next steps
 1. Get film per FOOTAGE_REQUEST.md; pick 3 held-out matches up front.
 2. Label rally boundaries for 2 matches; measure rally segmentation; add a whistle detector and the rally frame classifier as signals.

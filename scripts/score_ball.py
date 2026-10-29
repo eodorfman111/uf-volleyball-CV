@@ -52,8 +52,15 @@ def main():
     p.add_argument("pred")
     p.add_argument("--radius", type=float, default=12.0)
     p.add_argument("--drop-interp", action="store_true")
+    p.add_argument("--min-frame", type=int, default=None)
+    p.add_argument("--max-frame", type=int, default=None)
     a = p.parse_args()
-    print(json.dumps(score(pd.read_csv(a.labels), pd.read_csv(a.pred), a.radius, a.drop_interp), indent=2))
+    labels = pd.read_csv(a.labels)
+    if a.min_frame is not None:
+        labels = labels[labels.frame >= a.min_frame]
+    if a.max_frame is not None:
+        labels = labels[labels.frame < a.max_frame]
+    print(json.dumps(score(labels, pd.read_csv(a.pred), a.radius, a.drop_interp), indent=2))
 
 
 if __name__ == "__main__":

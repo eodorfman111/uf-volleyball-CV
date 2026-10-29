@@ -33,14 +33,30 @@ def items(split, matches=None):
     return out
 
 
-def load(item, size, sigma):
+def load(item, wh, sigma, rng=random):
+    w, h = wh
+    scale = item[2] if len(item) > 2 else 1
+    xy = item[1]
     im = cv2.imread(str(item[0]))
-    im = cv2.resize(im, (size, size)).astype(np.float32) / 255.0
-    hm = np.zeros((size, size), np.float32)
-    if item[1] is not None:
-        yy, xx = np.mgrid[0:size, 0:size]
-        hm = np.exp(-((xx - item[1][0] * size) ** 2 + (yy - item[1][1] * size) ** 2) / (2 * sigma**2)).astype(np.float32)
-    return torch.from_numpy(im.transpose(2, 0, 1)), torch.from_numpy(hm)[None]
+    if scale == 1:
+        im = cv2.resize(im, (w, h))
+        bx, by = (xy[0] * w, xy[1] * h) if xy else (None, None)
+    else:
+        big_w, big_h = w * scale, h * scale
+        im = cv2.resize(im, (big_w, big_h))
+        if xy and rng.random() < 0.7:
+            x0 = int(np.clip(xy[0] * big_w - rng.uniform(0.1, 0.9) * w, 0, big_w - w))
+            y0 = int(np.clip(xy[1] * big_h - rng.uniform(0.1, 0.9) * h, 0, big_h - h))
+        else:
+            x0, y0 = rng.randint(0, big_w - w), rng.randint(0, big_h - h)
+        im = im[y0 : y0 + h, x0 : x0 + w]
+        bx, by = (xy[0] * big_w - x0, xy[1] * big_h - y0) if xy else (None, None)
+    im = im.astype(np.float32) / 255.0
+    hm = np.zeros((h, w), np.float32)
+    if bx is not None:
+        yy, xx = np.mgrid[0:h, 0:w]
+        hm = np.exp(-((xx - bx) ** 2 + (yy - by) ** 2) / (2 * sigma**2)).astype(np.float32)
+    return torch.from_numpy(np.ascontiguousarray(im.transpose(2, 0, 1))), torch.from_numpy(hm)[None]
 
 
 def peak(hm, thr):
@@ -50,22 +66,22 @@ def peak(hm, thr):
     return float(i % hm.shape[-1]), float(i // hm.shape[-1]), float(v)
 
 
-def evaluate(model, data, size, thr, max_dist_px, orig):
+def evaluate(model, data, wh, thr, max_dist_px, orig):
     model.eval()
     tp = fp = fn = 0
     errs = []
+    w, h = wh
     with torch.no_grad():
         for it in data:
-            x, _ = load(it, size, 1)
+            x, _ = load(it, wh, 1)
             p = peak(torch.sigmoid(model(x[None]))[0, 0], thr)
-            s = orig / size
             if it[1] is None:
                 fp += p is not None
                 continue
             if p is None:
                 fn += 1
                 continue
-            d = np.hypot(p[0] * s - it[1][0] * orig, p[1] * s - it[1][1] * orig)
+            d = np.hypot(p[0] * orig[0] / w - it[1][0] * orig[0], p[1] * orig[1] / h - it[1][1] * orig[1])
             if d <= max_dist_px:
                 tp += 1
                 errs.append(d)
@@ -88,7 +104,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--data", required=True)
     p.add_argument("--test-matches", nargs="+", default=["match17", "match18"])
-    p.add_argument("--size", type=int, default=320)
+    p.add_argument("--input", type=int, nargs=2, default=[640, 360])
     p.add_argument("--sigma", type=float, default=2.5)
     p.add_argument("--width", type=int, default=16)
     p.add_argument("--steps", type=int, default=2000)
@@ -97,7 +113,10 @@ def main():
     p.add_argument("--max-train", type=int, default=0)
     p.add_argument("--thr", type=float, default=0.5)
     p.add_argument("--max-dist-px", type=float, default=10.0)
-    p.add_argument("--orig", type=int, default=960)
+    p.add_argument("--orig", type=int, nargs=2, default=[1280, 720])
+    p.add_argument("--extra", default=None)
+    p.add_argument("--extra-repeat", type=int, default=10)
+    p.add_argument("--extra-scale", type=int, default=2)
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--out", default="runs/train_ball_heatmap")
@@ -110,6 +129,8 @@ def main():
     if a.max_train:
         random.shuffle(train)
         train = train[: a.max_train]
+    if a.extra:
+        train += [(path, xy, a.extra_scale) for path, xy in items(Path(a.extra))] * a.extra_repeat
     test = items(Path(a.data, "test"), a.test_matches)
     model = HeatNet(a.width).to(a.device)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr)
@@ -125,7 +146,7 @@ def main():
     model.train()
     while step < a.steps:
         batch = random.sample(train, a.batch)
-        xs, ys = zip(*[load(it, a.size, a.sigma) for it in batch])
+        xs, ys = zip(*[load(it, tuple(a.input), a.sigma) for it in batch])
         x, y = torch.stack(xs).to(a.device), torch.stack(ys).to(a.device)
         logit = model(x)
         loss = F.binary_cross_entropy_with_logits(logit, y, pos_weight=torch.tensor(100.0, device=a.device))
@@ -139,7 +160,7 @@ def main():
             torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "step": step}, ck)
     res = {"args": vars(a), "n_train": len(train), "n_test": len(test), "train_seconds": round(time.time() - t0, 1)}
     model.cpu()
-    res["test"] = {str(t): evaluate(model, test, a.size, t, a.max_dist_px, a.orig) for t in (0.3, 0.5, 0.7)}
+    res["test"] = {str(t): evaluate(model, test, tuple(a.input), t, a.max_dist_px, a.orig) for t in (0.3, 0.5, 0.7)}
     (out / "metrics.json").write_text(json.dumps(res, indent=2))
     print(json.dumps(res, indent=2))
 
