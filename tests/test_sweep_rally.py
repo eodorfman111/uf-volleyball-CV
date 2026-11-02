@@ -38,3 +38,12 @@ def test_sweep_rejects_keys_it_does_not_evaluate():
     for bad in ("track.ball.min_len=3|5", "events.rally.min_spd=1|2"):
         with pytest.raises(ValueError):
             sweep(cfg, ball(), META, [30], parse_grid([bad]), tol=20)
+
+
+def test_sweep_without_play_frames_ranks_by_distance_to_the_known_count():
+    cfg = {"events": {"rally": copy.deepcopy(DEFAULTS["events"]["rally"])}}
+    cfg["events"]["rally"].update({"min_rally_s": 2.0, "merge_gap_s": 1.0, "pad_s": 0.0, "window_s": 1.0})
+    table = sweep(cfg, ball(), META, [], parse_grid(["events.rally.min_speed_px=0|3"]), tol=20, target=2)
+    assert table.iloc[0].params == "min_speed_px=3"
+    assert table.iloc[0].rallies == 2 and table.iloc[0].off_by == 0
+    assert (table.false_rallies == 0).all()

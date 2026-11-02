@@ -31,12 +31,13 @@ def check_keys(cfg, grid):
 def evaluate(rallies, truth, tol):
     spans = list(zip(rallies.start_frame, rallies.end_frame))
     covered = [any(s - tol <= t <= e for s, e in spans) for t in truth]
-    false = [not any(s - tol <= t <= e for t in truth) for s, e in spans]
+    false = [not any(s - tol <= t <= e for t in truth) for s, e in spans] if truth else []
     return sum(covered), sum(false)
 
 
-def sweep(cfg, ball, meta, truth, grid, tol):
+def sweep(cfg, ball, meta, truth, grid, tol, target=None):
     check_keys(cfg, grid)
+    target = len(truth) if truth else target
     keys = list(grid)
     rows = []
     for combo in itertools.product(*(grid[k] for k in keys)):
@@ -56,23 +57,24 @@ def sweep(cfg, ball, meta, truth, grid, tol):
             }
         )
     out = pd.DataFrame(rows)
-    out["off_by"] = (out.rallies - len(truth)).abs()
-    return out.sort_values(["missed", "false_rallies", "off_by"], kind="stable").reset_index(drop=True)
+    out["off_by"] = (out.rallies - (target if target is not None else len(truth))).abs()
+    return out.sort_values(["missed", "false_rallies", "off_by", "play_s"], kind="stable").reset_index(drop=True)
 
 
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("-c", "--config", required=True)
-    p.add_argument("--plays", required=True, help="comma-separated frame numbers, one per real play (serve contact)")
+    p.add_argument("--plays", default="", help="comma-separated frame numbers, one per real play (serve contact)")
+    p.add_argument("--target", type=int, default=None, help="known number of plays when the frames are not available")
     p.add_argument("--grid", action="append", default=[], metavar="KEY=V1|V2|V3")
     p.add_argument("--tol", type=int, default=45)
     a = p.parse_args()
     cfg = load_config(a.config)
     meta = load_meta(cfg)
     ball = pd.read_csv(run_dir(cfg) / "track" / "ball.csv")
-    truth = [int(v) for v in a.plays.split(",")]
+    truth = [int(v) for v in a.plays.split(",") if v]
     pd.set_option("display.width", 250)
-    print(sweep(cfg, ball, meta, truth, parse_grid(a.grid), a.tol).to_string())
+    print(sweep(cfg, ball, meta, truth, parse_grid(a.grid), a.tol, a.target).to_string())
 
 
 if __name__ == "__main__":
