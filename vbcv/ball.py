@@ -86,15 +86,18 @@ class HeatmapBall:
     def __init__(self, checkpoint, threshold=0.5, device="cpu", input_size=(1280, 720), width=16):
         import torch
 
-        from .heatnet import HeatNet
+        from .heatnet import HeatNet, load_weights
 
         self.torch = torch
         self.device = device
         self.threshold = threshold
         self.w, self.h = int(input_size[0]), int(input_size[1])
-        self.net = HeatNet(width).to(device).eval()
         state = torch.load(checkpoint, map_location=device)
-        self.net.load_state_dict(state["model"] if "model" in state else state)
+        weights = state["model"] if "model" in state else state
+        self.gap = int(state.get("gap", 0)) if isinstance(state, dict) else 0
+        in_ch = int(state.get("in_ch", 9 if self.gap else 3)) if isinstance(state, dict) else 3
+        self.net = HeatNet(width, in_ch).to(device).eval()
+        load_weights(self.net, weights, center=1 if in_ch == 9 else 0)
 
     def prep(self, frame):
         return np.ascontiguousarray(cv2.resize(frame, (self.w, self.h)).astype(np.float32).transpose(2, 0, 1) / 255.0)
@@ -118,12 +121,35 @@ class HeatmapBall:
                 d = self.decode(hm)
                 rows.append((idx, 0, -1.0, -1.0, 0.0) if d is None else (idx, 1, d[0] * sx, d[1] * sy, d[2]))
 
-        for idx, frame in frame_iter:
-            buf.append(self.prep(frame))
+        def add(idx, arr):
+            buf.append(arr)
             idxs.append(idx)
             if len(buf) == batch:
                 flush()
-                buf, idxs = [], []
+                buf.clear()
+                idxs.clear()
+
+        if self.gap == 0:
+            for idx, frame in frame_iter:
+                add(idx, self.prep(frame))
+        else:
+            ring, order, nxt = {}, [], 0
+
+            def emit(c, last):
+                lo, hi = order[max(c - self.gap, 0)], order[min(c + self.gap, last)]
+                add(order[c], np.concatenate([ring[lo], ring[order[c]], ring[hi]]))
+
+            for idx, frame in frame_iter:
+                ring[idx] = self.prep(frame)
+                order.append(idx)
+                while nxt + self.gap < len(order):
+                    emit(nxt, len(order) - 1)
+                    if nxt - self.gap - 1 >= 0:
+                        ring.pop(order[nxt - self.gap - 1], None)
+                    nxt += 1
+            while nxt < len(order):
+                emit(nxt, len(order) - 1)
+                nxt += 1
         if buf:
             flush()
         return rows

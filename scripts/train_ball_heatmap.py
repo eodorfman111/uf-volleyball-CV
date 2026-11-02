@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from vbcv.heatnet import HeatNet
+from vbcv.heatnet import HeatNet, load_weights
 
 
 def match_of(name):
@@ -33,30 +33,39 @@ def items(split, matches=None):
     return out
 
 
+def read_stack(item):
+    path = Path(item[0])
+    gap = item[3] if len(item) > 3 else 0
+    cur = cv2.imread(str(path))
+    if not gap:
+        return [cur]
+    return [cv2.imread(str(path.parent.parent / "images_prev" / path.name)), cur, cv2.imread(str(path.parent.parent / "images_next" / path.name))]
+
+
 def load(item, wh, sigma, rng=random):
     w, h = wh
     scale = item[2] if len(item) > 2 else 1
     xy = item[1]
-    im = cv2.imread(str(item[0]))
+    ims = read_stack(item)
     if scale == 1:
-        im = cv2.resize(im, (w, h))
+        ims = [cv2.resize(im, (w, h)) for im in ims]
         bx, by = (xy[0] * w, xy[1] * h) if xy else (None, None)
     else:
         big_w, big_h = w * scale, h * scale
-        im = cv2.resize(im, (big_w, big_h))
+        ims = [cv2.resize(im, (big_w, big_h)) for im in ims]
         if xy and rng.random() < 0.7:
             x0 = int(np.clip(xy[0] * big_w - rng.uniform(0.1, 0.9) * w, 0, big_w - w))
             y0 = int(np.clip(xy[1] * big_h - rng.uniform(0.1, 0.9) * h, 0, big_h - h))
         else:
             x0, y0 = rng.randint(0, big_w - w), rng.randint(0, big_h - h)
-        im = im[y0 : y0 + h, x0 : x0 + w]
+        ims = [im[y0 : y0 + h, x0 : x0 + w] for im in ims]
         bx, by = (xy[0] * big_w - x0, xy[1] * big_h - y0) if xy else (None, None)
-    im = im.astype(np.float32) / 255.0
+    arr = np.concatenate([im.astype(np.float32).transpose(2, 0, 1) / 255.0 for im in ims])
     hm = np.zeros((h, w), np.float32)
     if bx is not None:
         yy, xx = np.mgrid[0:h, 0:w]
         hm = np.exp(-((xx - bx) ** 2 + (yy - by) ** 2) / (2 * sigma**2)).astype(np.float32)
-    return torch.from_numpy(np.ascontiguousarray(im.transpose(2, 0, 1))), torch.from_numpy(hm)[None]
+    return torch.from_numpy(np.ascontiguousarray(arr)), torch.from_numpy(hm)[None]
 
 
 def peak(hm, thr):
@@ -117,6 +126,8 @@ def main():
     p.add_argument("--extra", default=None)
     p.add_argument("--extra-repeat", type=int, default=10)
     p.add_argument("--extra-scale", type=int, default=2)
+    p.add_argument("--temporal-gap", type=int, default=0)
+    p.add_argument("--init", default=None)
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--out", default="runs/train_ball_heatmap")
@@ -129,10 +140,13 @@ def main():
     if a.max_train:
         random.shuffle(train)
         train = train[: a.max_train]
+    if a.temporal_gap:
+        train = []
     if a.extra:
-        train += [(path, xy, a.extra_scale) for path, xy in items(Path(a.extra))] * a.extra_repeat
+        train += [(path, xy, a.extra_scale, a.temporal_gap) for path, xy in items(Path(a.extra))] * a.extra_repeat
     test = items(Path(a.data, "test"), a.test_matches)
-    model = HeatNet(a.width).to(a.device)
+    in_ch = 9 if a.temporal_gap else 3
+    model = HeatNet(a.width, in_ch).to(a.device)
     opt = torch.optim.AdamW(model.parameters(), lr=a.lr)
     ck = out / "last.pt"
     step = 0
@@ -141,6 +155,9 @@ def main():
         model.load_state_dict(s["model"])
         opt.load_state_dict(s["opt"])
         step = s["step"]
+    elif a.init:
+        state = torch.load(a.init, map_location=a.device)
+        load_weights(model, state["model"] if "model" in state else state, center=1 if a.temporal_gap else 0)
     t0 = time.time()
     log = open(out / "train_log.jsonl", "a")
     model.train()
@@ -157,10 +174,10 @@ def main():
         if step % 50 == 0 or step == a.steps:
             log.write(json.dumps({"step": step, "loss": round(loss.detach().item(), 5), "t": round(time.time() - t0, 1)}) + "\n")
             log.flush()
-            torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "step": step}, ck)
+            torch.save({"model": model.state_dict(), "opt": opt.state_dict(), "step": step, "in_ch": in_ch, "gap": a.temporal_gap}, ck)
     res = {"args": vars(a), "n_train": len(train), "n_test": len(test), "train_seconds": round(time.time() - t0, 1)}
     model.cpu()
-    res["test"] = {str(t): evaluate(model, test, tuple(a.input), t, a.max_dist_px, a.orig) for t in (0.3, 0.5, 0.7)}
+    res["test"] = {} if a.temporal_gap else {str(t): evaluate(model, test, tuple(a.input), t, a.max_dist_px, a.orig) for t in (0.3, 0.5, 0.7)}
     (out / "metrics.json").write_text(json.dumps(res, indent=2))
     print(json.dumps(res, indent=2))
 

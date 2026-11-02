@@ -48,6 +48,7 @@ The public dataset is a 16:9 frame squashed into a square, and its ball is about
 2. `python scripts/export_ball_labels.py <video> labels_train.csv /blue/<group>/<user>/uf_train --max-frame <N>`
 3. `DATA=<public ball_ds> OUT=<run dir> EXTRA="--steps 6000 --extra /blue/<group>/<user>/uf_train --extra-repeat 10" sbatch --time=01:30:00 slurm/train_ball.sbatch`. To continue from an earlier checkpoint, copy its `last.pt` into the new `OUT` first; training resumes from its step count, so set `--steps` above it.
 4. Point `detect.ball` at it (`backend: heatmap`, `model: <OUT>/last.pt`), run `detect`, and score with `scripts/score_ball.py labels.csv runs/<match>/detect/ball.csv --min-frame <first test frame>`.
+For motion, export with `--gap 1` and train with `--temporal-gap 1 --init <public last.pt> --extra <dir>`: the network then takes the previous, current and next frames (9 channels), starts as the single-frame model (its first layer is copied into the current-frame slot), and learns to use motion; only the center frame needs a label. Public images have no neighbours, so temporal training uses UF frames only. The checkpoint records `gap` and `in_ch`, so `detect.ball.backend: heatmap` picks the right mode by itself.
 The model trained on public data alone fires on the crowd on nearly every frame of the UF test clip (F1 0.0 against hand labels), so the UF frames and negatives are what make it usable.
 
 ## Ranked next steps

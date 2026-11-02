@@ -57,3 +57,14 @@ def test_items_reads_missing_and_empty_label_files_as_negatives(tmp_path):
     (tmp_path / "labels" / "c.txt").write_text("0 0.5 0.25 0.1 0.1\n")
     got = {p.name: xy for p, xy in items(tmp_path)}
     assert got == {"a.jpg": None, "b.jpg": None, "c.jpg": (0.5, 0.25)}
+
+
+def test_temporal_item_stacks_previous_current_and_next_frames(tmp_path):
+    for sub, value in (("images_prev", 10), ("images", 100), ("images_next", 200)):
+        (tmp_path / sub).mkdir(exist_ok=True)
+        cv2.imwrite(str(tmp_path / sub / "a.jpg"), np.full((108, 192, 3), value, np.uint8))
+    x, hm = load((tmp_path / "images" / "a.jpg", (0.5, 0.5), 1, 2), (96, 54), 2.0)
+    assert x.shape == (9, 54, 96)
+    means = [round(float(x[i * 3 : i * 3 + 3].mean()) * 255) for i in range(3)]
+    assert means == [10, 100, 200]
+    assert peak(hm) == (48, 27)
