@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ..ball import HeatmapBall, VballNet
+from ..ball import HeatmapBall, UltralyticsBall, VballNet
 from ..checkpoint import stage_dir
 from ..players import make_detector
 from ..video import frames
@@ -14,6 +14,8 @@ def detect_ball(cfg, meta, out):
         return 0
     if c["backend"] == "heatmap":
         model = HeatmapBall(c["model"], c["threshold"], c.get("device", "cpu"), c.get("input_size", (1280, 720)))
+    elif c["backend"] == "yolo":
+        model = UltralyticsBall(c["model"], c["threshold"], c.get("device", "cpu"), c.get("imgsz", 1280))
     elif c["backend"] == "vballnet":
         providers = ["CUDAExecutionProvider", "CPUExecutionProvider"] if c.get("device") == "cuda" else None
         model = VballNet(c["model"], c["threshold"], providers)

@@ -153,3 +153,37 @@ class HeatmapBall:
         if buf:
             flush()
         return rows
+
+
+class UltralyticsBall:
+    def __init__(self, weights, threshold=0.25, device="cpu", imgsz=1280):
+        from ultralytics import YOLO
+
+        self.model = YOLO(str(weights))
+        self.threshold = threshold
+        self.device = 0 if device == "cuda" else device
+        self.imgsz = int(imgsz)
+
+    def run_video(self, frame_iter, width, height, batch=8):
+        rows, idxs, buf = [], [], []
+
+        def flush():
+            res = self.model.predict(buf, imgsz=self.imgsz, conf=self.threshold, device=self.device, verbose=False)
+            for idx, r in zip(idxs, res):
+                b = r.boxes
+                if len(b) == 0:
+                    rows.append((idx, 0, -1.0, -1.0, 0.0))
+                    continue
+                k = int(b.conf.argmax())
+                cx, cy = (float(v) for v in b.xywh[k][:2])
+                rows.append((idx, 1, cx, cy, float(b.conf[k])))
+
+        for idx, frame in frame_iter:
+            buf.append(frame)
+            idxs.append(idx)
+            if len(buf) == batch:
+                flush()
+                buf, idxs = [], []
+        if buf:
+            flush()
+        return rows
