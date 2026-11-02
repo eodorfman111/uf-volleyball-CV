@@ -72,6 +72,7 @@ def main():
     p.add_argument("--labels", required=True)
     p.add_argument("--grid", action="append", default=[], metavar="KEY=V1|V2|V3")
     p.add_argument("--split", type=int, default=None)
+    p.add_argument("--min-frame", type=int, default=None)
     p.add_argument("--radius", type=float, default=12.0)
     p.add_argument("--drop-interp", action="store_true")
     a = p.parse_args()
@@ -79,6 +80,8 @@ def main():
     meta = load_meta(cfg)
     det = pd.read_csv(run_dir(cfg) / "detect" / "ball.csv")
     labels = pd.read_csv(a.labels)
+    if a.min_frame is not None:
+        labels = labels[labels.frame >= a.min_frame]
     split = a.split if a.split is not None else int(labels.frame.median())
     table = sweep(cfg, det, labels, parse_grid(a.grid), split, (meta["width"], meta["height"]), a.radius, a.drop_interp)
     pd.set_option("display.width", 250)
