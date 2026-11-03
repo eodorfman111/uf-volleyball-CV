@@ -20,13 +20,28 @@ def main():
     cap = cv2.VideoCapture(a.path)
     fps = cap.get(cv2.CAP_PROP_FPS) or 30
     delay = max(1, int(1000 / fps / a.speed))
+    pos, paused, frame = -1, False, None
     while True:
-        ok, frame = cap.read()
-        if not ok:
-            break
+        if frame is None or not paused:
+            ok, frame = cap.read()
+            if not ok:
+                break
+            pos += 1
         cv2.imshow("view", frame)
-        if cv2.waitKey(delay) == 27:
+        k = cv2.waitKey(30 if paused else delay) & 0xFF
+        if k == 27:
             break
+        if k == ord(" "):
+            paused = not paused
+        elif paused and k == ord("d"):
+            ok, nxt = cap.read()
+            if ok:
+                frame, pos = nxt, pos + 1
+        elif paused and k == ord("a") and pos > 0:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, pos - 1)
+            ok, prev = cap.read()
+            if ok:
+                frame, pos = prev, pos - 1
 
 
 if __name__ == "__main__":
