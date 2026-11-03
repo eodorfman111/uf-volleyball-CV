@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 import cv2
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -34,10 +35,15 @@ def main():
     p.add_argument("--step", type=int, default=10)
     p.add_argument("--pred", default=None)
     p.add_argument("--frames-file", default=None)
+    p.add_argument("--frames-dir", default=None, help="folder of ffmpeg-extracted jpgs; frame number = start + (file index) * step")
     p.add_argument("--split", default=None)
     p.add_argument("--shard", default=None, help="K/N: label only every Nth chosen frame, starting at K (0-based)")
     a = p.parse_args()
-    if a.frames_file:
+    if a.frames_dir:
+        k, n = map(int, a.shard.split("/")) if a.shard else (0, 1)
+        files = sorted(Path(a.frames_dir).glob("*.jpg"))
+        cache = {a.start + j * a.step: np.fromfile(str(f), np.uint8) for j, f in enumerate(files) if j % n == k}
+    elif a.frames_file:
         sel = pd.read_csv(a.frames_file)
         if a.split:
             sel = sel[sel.split == a.split]
