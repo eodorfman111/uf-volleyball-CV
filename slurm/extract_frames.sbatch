@@ -15,7 +15,7 @@ if [ -n "${BURST_EVERY:-}" ]; then
   BURST_LEN=${BURST_LEN:-10}
   BURST_STEP=${BURST_STEP:-5}
   COUNT=$(( ${BURSTS:-40} * BURST_LEN ))
-  SEL="lt(mod(n,$BURST_EVERY),$(( BURST_LEN * BURST_STEP )))*not(mod(n,$BURST_STEP))"
+  SEL="gte(n,${BURST_FIRST:-0})*lt(mod(n,$BURST_EVERY),$(( BURST_LEN * BURST_STEP )))*not(mod(n,$BURST_STEP))"
 else
   SEL="not(mod(n,$STEP))"
 fi
