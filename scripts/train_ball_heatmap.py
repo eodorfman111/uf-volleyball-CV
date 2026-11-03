@@ -123,7 +123,7 @@ def main():
     p.add_argument("--thr", type=float, default=0.5)
     p.add_argument("--max-dist-px", type=float, default=10.0)
     p.add_argument("--orig", type=int, nargs=2, default=[1280, 720])
-    p.add_argument("--extra", default=None)
+    p.add_argument("--extra", nargs="+", default=None)
     p.add_argument("--extra-repeat", type=int, default=10)
     p.add_argument("--extra-scale", type=int, default=2)
     p.add_argument("--temporal-gap", type=int, default=0)
@@ -143,7 +143,8 @@ def main():
     if a.temporal_gap:
         train = []
     if a.extra:
-        train += [(path, xy, a.extra_scale, a.temporal_gap) for path, xy in items(Path(a.extra))] * a.extra_repeat
+        for extra in a.extra:
+            train += [(path, xy, a.extra_scale, a.temporal_gap) for path, xy in items(Path(extra))] * a.extra_repeat
     test = items(Path(a.data, "test"), a.test_matches)
     in_ch = 9 if a.temporal_gap else 3
     model = HeatNet(a.width, in_ch).to(a.device)

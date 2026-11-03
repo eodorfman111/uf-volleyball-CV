@@ -16,6 +16,10 @@ def load_pred(path):
     return pred.drop_duplicates("frame").set_index("frame")
 
 
+def encode(frame):
+    return cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 95])[1]
+
+
 def save(labels, out):
     rows = [(f, *labels[f]) for f in sorted(labels)]
     pd.DataFrame(rows, columns=["frame", "visible", "x", "y"]).to_csv(out, index=False)
@@ -26,11 +30,20 @@ def main():
     p.add_argument("video")
     p.add_argument("out")
     p.add_argument("--start", type=int, default=0)
-    p.add_argument("--end", type=int, required=True)
+    p.add_argument("--end", type=int, default=None)
     p.add_argument("--step", type=int, default=10)
     p.add_argument("--pred", default=None)
+    p.add_argument("--frames-file", default=None)
+    p.add_argument("--split", default=None)
     a = p.parse_args()
-    cache = {i: cv2.imencode(".jpg", fr, [cv2.IMWRITE_JPEG_QUALITY, 95])[1] for i, fr in frames(a.video, a.start, a.end, a.step)}
+    if a.frames_file:
+        sel = pd.read_csv(a.frames_file)
+        if a.split:
+            sel = sel[sel.split == a.split]
+        wanted = {int(f) for f in sel.frame}
+        cache = {i: encode(fr) for i, fr in frames(a.video, 0, max(wanted) + 1) if i in wanted}
+    else:
+        cache = {i: encode(fr) for i, fr in frames(a.video, a.start, a.end, a.step)}
     todo = sorted(cache)
     labels = {}
     if Path(a.out).exists():
