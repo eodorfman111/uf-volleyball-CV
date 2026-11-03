@@ -11,6 +11,14 @@ OUT=${OUT:-/blue/uf-sal/leodorfman/film/frames_full}
 STEP=${STEP:-558}
 COUNT=${COUNT:-401}
 mkdir -p "$OUT"
-run() { ffmpeg -nostdin -y -threads 4 -i "$VIDEO" -vf "select='not(mod(n,$STEP))'" "$@" -q:v 2 -frames:v "$COUNT" "$OUT/%05d.jpg"; }
+if [ -n "${BURST_EVERY:-}" ]; then
+  BURST_LEN=${BURST_LEN:-10}
+  BURST_STEP=${BURST_STEP:-5}
+  COUNT=$(( ${BURSTS:-40} * BURST_LEN ))
+  SEL="lt(mod(n,$BURST_EVERY),$(( BURST_LEN * BURST_STEP )))*not(mod(n,$BURST_STEP))"
+else
+  SEL="not(mod(n,$STEP))"
+fi
+run() { ffmpeg -nostdin -y -threads 4 -i "$VIDEO" -vf "select='$SEL'" "$@" -q:v 2 -frames:v "$COUNT" "$OUT/%05d.jpg"; }
 run -fps_mode passthrough || run -vsync 0
 chmod -R g+rX "$OUT"
