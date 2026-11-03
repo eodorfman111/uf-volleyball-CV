@@ -5,7 +5,7 @@
 #SBATCH --time=02:00:00
 #SBATCH --output=logs/%x-%j.out
 set -euo pipefail
-source "$(dirname "$(readlink -f "$0")")/common.sh"
+source slurm/common.sh
 VIDEO=${VIDEO:-/blue/uf-sal/leodorfman/film/UFvsUKFull.mp4}
 OUT=${OUT:-/blue/uf-sal/leodorfman/film/frames_full}
 STEP=${STEP:-558}
