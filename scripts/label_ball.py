@@ -35,15 +35,21 @@ def main():
     p.add_argument("--pred", default=None)
     p.add_argument("--frames-file", default=None)
     p.add_argument("--split", default=None)
+    p.add_argument("--shard", default=None, help="K/N: label only every Nth chosen frame, starting at K (0-based)")
     a = p.parse_args()
     if a.frames_file:
         sel = pd.read_csv(a.frames_file)
         if a.split:
             sel = sel[sel.split == a.split]
-        wanted = {int(f) for f in sel.frame}
+        wanted = sorted({int(f) for f in sel.frame})
+        if a.shard:
+            k, n = map(int, a.shard.split("/"))
+            wanted = wanted[k::n]
+        wanted = set(wanted)
         cache = {i: encode(fr) for i, fr in frames(a.video, 0, max(wanted) + 1) if i in wanted}
     else:
-        cache = {i: encode(fr) for i, fr in frames(a.video, a.start, a.end, a.step)}
+        k, n = map(int, a.shard.split("/")) if a.shard else (0, 1)
+        cache = {i: encode(fr) for i, fr in frames(a.video, a.start, a.end, a.step) if ((i - a.start) // a.step) % n == k}
     todo = sorted(cache)
     labels = {}
     if Path(a.out).exists():
