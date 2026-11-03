@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from vbcv.video import frames
 
 
 def load_pred(path):
@@ -44,6 +43,7 @@ def main():
         files = sorted(Path(a.frames_dir).glob("*.jpg"))
         cache = {a.start + j * a.step: np.fromfile(str(f), np.uint8) for j, f in enumerate(files) if j % n == k}
     elif a.frames_file:
+        from vbcv.video import frames
         sel = pd.read_csv(a.frames_file)
         if a.split:
             sel = sel[sel.split == a.split]
@@ -54,6 +54,8 @@ def main():
         wanted = set(wanted)
         cache = {i: encode(fr) for i, fr in frames(a.video, 0, max(wanted) + 1) if i in wanted}
     else:
+        from vbcv.video import frames
+
         k, n = map(int, a.shard.split("/")) if a.shard else (0, 1)
         cache = {i: encode(fr) for i, fr in frames(a.video, a.start, a.end, a.step) if ((i - a.start) // a.step) % n == k}
     todo = sorted(cache)
