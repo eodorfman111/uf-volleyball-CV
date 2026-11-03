@@ -27,7 +27,9 @@ def rally_table(rallies, contacts, serves):
                 "end_s": r.end_s,
                 "duration_s": r.end_s - r.start_s,
                 "contacts": len(g),
-                "serve_side": g.side.iloc[0] if len(g) and isinstance(g.side.iloc[0], str) else None,
+                "serve_side": getattr(r, "serve_side", None)
+                if isinstance(getattr(r, "serve_side", None), str)
+                else (g.side.iloc[0] if len(g) and isinstance(g.side.iloc[0], str) else None),
                 "n_attacks": int((g.label == "attack").sum()),
                 "n_blocks": int((g.label == "block").sum()),
                 "serve_speed_kmh": float(s.ballistic_avg_kmh.iloc[0]) if len(s) else np.nan,

@@ -52,6 +52,9 @@ For motion, export with `--gap 1` and train with `--temporal-gap 1 --init <publi
 A YOLO26 comparison trains on the same export (`images/` and `labels/`, the gap folders are ignored): `slurm/train_yolo.sbatch` runs `scripts/train_ball_yolo.py` (pretrained `yolo26s.pt`, 1280 px). Run it with `detect.ball.backend: yolo`, `model: <OUT>/run/weights/best.pt`, and score it the same way. Ultralytics is AGPL-3.0, so get the lab's sign-off before building on it.
 The model trained on public data alone fires on the crowd on nearly every frame of the UF test clip (F1 0.0 against hand labels), so the UF frames and negatives are what make it usable.
 
+## Contact and serve rules (events.contact)
+`max_player_dist_m` is compared with the ball's distance to the nearest player box in units of box heights, not meters; 1.5 accepts almost any contact. `drop_unattached: true` discards contacts farther than that from every player (try 0.2 to 0.5). The server's hit is rarely detected as a contact, so the first detected contact is usually the receiving team's first touch: `first_is_receive: true` labels it a pass and sets `serve_side` to the opposite side (written to `rallies.csv`). Checked on the UF vs UK clip against six hand-described plays: rally segmentation matched (`min_speed_px 20`, `merge_gap_s 5`, `min_rally_s 2`), serve sides were inverted before this option, and block detection found none.
+
 ## Ranked next steps
 1. Get film per FOOTAGE_REQUEST.md; pick 3 held-out matches up front.
 2. Label rally boundaries for 2 matches; measure rally segmentation; add a whistle detector and the rally frame classifier as signals.

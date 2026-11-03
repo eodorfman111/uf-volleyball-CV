@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from vbcv.stages.events import find_contacts, label_touches, segment_rallies, serve_speeds
+from vbcv.stages.events import add_serve_side, find_contacts, label_touches, segment_rallies, serve_speeds
 from vbcv.stages.track import clean_ball
 
 
@@ -96,3 +96,12 @@ def test_drop_static_removes_parked_false_positive():
     out = drop_static(pd.concat([moving, parked]), 24, 0.1, 100)
     assert (out.x == 1500.0).sum() == 0
     assert len(out) == 100
+
+
+def test_first_contact_can_be_the_receive_and_the_serve_side_follows():
+    con = pd.DataFrame({"frame": [40, 60, 80], "side": ["far", "far", "near"], "court_x": [4, 5, 4], "court_y": [15, 10, 5], "player_dist": [0.1] * 3})
+    rallies = pd.DataFrame({"rally_id": [0], "start_frame": [0], "end_frame": [200]})
+    out = label_touches(con, rallies, 1.5, 9.0, 30, first_is_receive=True)
+    assert out.label.tolist()[:2] == ["pass", "set"]
+    assert add_serve_side(rallies, out, True).serve_side.tolist() == ["near"]
+    assert add_serve_side(rallies, out, False).serve_side.tolist() == ["far"]

@@ -121,7 +121,7 @@ def attach_players(contacts, players, max_frames=3):
     return contacts
 
 
-def label_touches(contacts, rallies, max_dist, net_y, block_window):
+def label_touches(contacts, rallies, max_dist, net_y, block_window, first_is_receive=False):
     contacts = contacts.copy()
     contacts["rally_id"] = -1
     contacts["label"] = "unknown"
@@ -135,7 +135,7 @@ def label_touches(contacts, rallies, max_dist, net_y, block_window):
         for k, (i, r) in enumerate(g.iterrows()):
             s = r.side if isinstance(r.side, str) else None
             if k == 0:
-                lab, n, side = "serve", 0, s
+                lab, n, side = ("pass", 1, s) if first_is_receive else ("serve", 0, s)
             elif prev is not None and prev[1] == "attack" and s and s != side and abs(r.court_y - net_y) < 2.0 and r.frame - prev[0] <= block_window:
                 lab, n, side = "block", 0, s
             else:
@@ -147,6 +147,19 @@ def label_touches(contacts, rallies, max_dist, net_y, block_window):
             contacts.loc[i, ["label", "touch_n"]] = [lab, n]
             prev = (r.frame, lab)
     return contacts
+
+
+def add_serve_side(rallies, contacts, first_is_receive=False):
+    sides = []
+    for r in rallies.itertuples():
+        g = contacts[(contacts.rally_id == r.rally_id) & contacts.side.isin(["near", "far"])].sort_values("frame")
+        side = g.side.iloc[0] if len(g) else None
+        if side and first_is_receive:
+            side = "far" if side == "near" else "near"
+        sides.append(side)
+    out = rallies.copy()
+    out["serve_side"] = sides
+    return out
 
 
 def serve_speeds(contacts, fps, ball=None, P=None):
@@ -240,9 +253,14 @@ def run(cfg):
     ball = pd.read_csv(tdir / "ball.csv")
     players = pd.read_csv(tdir / "players.csv")
     rallies = segment_rallies(ball, meta, ec["rally"])
+    cc = ec["contact"]
+    contacts = attach_players(find_contacts(ball, cc), players)
+    if cc.get("drop_unattached"):
+        contacts = contacts[contacts.player_dist <= cc["max_player_dist_m"]].reset_index(drop=True)
+    first_is_receive = bool(cc.get("first_is_receive", False))
+    contacts = label_touches(contacts, rallies, cc["max_player_dist_m"], cfg["court"]["length_m"] / 2, int(meta["fps"] * 0.6), first_is_receive)
+    rallies = add_serve_side(rallies, contacts, first_is_receive)
     rallies.to_csv(out / "rallies.csv", index=False, float_format="%.3f")
-    contacts = attach_players(find_contacts(ball, ec["contact"]), players)
-    contacts = label_touches(contacts, rallies, ec["contact"]["max_player_dist_m"], cfg["court"]["length_m"] / 2, int(meta["fps"] * 0.6))
     contacts.to_csv(out / "contacts.csv", index=False, float_format="%.3f")
     hpath = stage_dir(cfg, "calibrate") / "homography.json"
     P = None
