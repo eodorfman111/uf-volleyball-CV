@@ -26,6 +26,18 @@ def predict(model, files, first, every, win):
     return pd.DataFrame(rows, columns=["frame", "visible", "x", "y", "conf"])
 
 
+def clean_windows(pred, first, every, max_jump_px=120, max_gap=8, min_len=5):
+    from vbcv.stages.track import clean_ball
+
+    parts = []
+    pred = pred.assign(win=(pred.frame - first) // every)
+    for _, g in pred.groupby("win"):
+        c = clean_ball(g.drop(columns="win"), max_jump_px, max_gap, min_len)
+        if len(c):
+            parts.append(c)
+    return pd.concat(parts, ignore_index=True) if parts else pd.DataFrame(columns=["frame", "x", "y", "conf", "interp", "seg"])
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("labels")
@@ -39,6 +51,7 @@ def main():
     p.add_argument("--device", default="cpu")
     p.add_argument("--out", default=None)
     p.add_argument("--keep-first", action="store_true")
+    p.add_argument("--clean", action="store_true", help="apply the track-stage cleaning (jump gate, min run length) per window before scoring")
     a = p.parse_args()
     from vbcv.ball import HeatmapBall
 
@@ -56,6 +69,10 @@ def main():
             pred.to_csv(Path(a.out) / (Path(ck).parent.name + "_pred.csv"), index=False, float_format="%.2f")
         print(ck)
         print(json.dumps(score(labels, pred, a.radius), indent=2))
+        if a.clean:
+            cleaned = clean_windows(pred, a.first, a.every)
+            print("after track cleaning (interpolated frames not counted):")
+            print(json.dumps(score(labels, cleaned, a.radius, drop_interp=True), indent=2))
 
 
 if __name__ == "__main__":
