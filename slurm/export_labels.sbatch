@@ -7,3 +7,4 @@
 set -euo pipefail
 source slurm/common.sh
 python scripts/export_ball_labels.py "${VIDEO:?set VIDEO}" "${LABELS:?set LABELS}" "${OUT:?set OUT}" --gap "${GAP:-1}" ${EXTRA:-}
+if [ -n "${CHECK_DIR:-}" ]; then python scripts/check_export.py "$LABELS" "$OUT" "$CHECK_DIR"; fi
