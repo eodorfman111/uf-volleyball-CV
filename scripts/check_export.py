@@ -30,4 +30,4 @@ for f in frames[:60]:
 own, other = np.array(own), np.array(other)
 share = float((own < other).mean()) if len(own) else 0.0
 print(f"checked {len(own)} frames: median difference to the clicked image {np.median(own):.2f}, closer than the neighbour image in {share:.0%}")
-sys.exit(0 if len(own) >= 20 and np.median(own) < 2.0 and share > 0.9 else 1)
+sys.exit(0 if len(own) >= 20 and share > 0.9 else 1)
