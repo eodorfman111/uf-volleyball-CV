@@ -18,6 +18,29 @@ def fit_offset(dvw, pipe, lo, hi):
     return best[1], best[0]
 
 
+def start_counts(dvw, pipe, lo, hi, early=8.0, late=2.0):
+    serves = dvw.start_time.to_numpy(float)
+    starts = np.sort(pipe.start_s.to_numpy(float))
+    res = []
+    for off in np.arange(lo, hi + 1, 1.0):
+        t = serves - off
+        idx = np.searchsorted(starts, t - early)
+        ok = (idx < len(starts)) & (starts[np.minimum(idx, len(starts) - 1)] <= t + late)
+        inside = (t >= starts.min() - 10) & (t <= starts.max() + 10)
+        res.append((int((ok & inside).sum()), int(inside.sum()), float(off)))
+    return res
+
+
+def top_offsets(res, n=6, min_sep=15.0):
+    out = []
+    for hits, inside, off in sorted(res, key=lambda r: (-r[0], r[2])):
+        if all(abs(off - o) >= min_sep for _, _, o in out):
+            out.append((hits, inside, off))
+        if len(out) == n:
+            break
+    return out
+
+
 def match(dvw, pipe, off):
     pairs, used = [], set()
     for i, p in pipe.iterrows():
@@ -41,6 +64,7 @@ def main():
     p.add_argument("--fps", type=float, default=30.0)
     p.add_argument("--offset-range", type=float, nargs=2, default=[-1000, 9500])
     p.add_argument("--offset", type=float, default=None)
+    p.add_argument("--top", action="store_true", help="list the best-fitting offsets by counting pipeline rally starts near scout serves")
     a = p.parse_args()
     dr = pd.read_csv(f"{a.dvw_dir}/rallies.csv").dropna(subset=["start_time", "end_time"])
     dt = pd.read_csv(f"{a.dvw_dir}/touches.csv")
@@ -48,6 +72,11 @@ def main():
     pc = pd.read_csv(f"{a.run_dir}/events/contacts.csv")
     if "start_s" not in pr:
         pr["start_s"], pr["end_s"] = pr.start_frame / a.fps, pr.end_frame / a.fps
+    if a.top:
+        res = start_counts(dr, pr, *a.offset_range)
+        print("offset_s, scout serves with a pipeline rally start within 8 s before to 2 s after, scout serves inside the section")
+        for hits, inside, off_ in top_offsets(res):
+            print(f"  {off_:7.0f}  {hits:3d} of {inside}")
     off, score = (a.offset, None) if a.offset is not None else fit_offset(dr, pr, *a.offset_range)
     lo, hi = pr.start_s.min(), pr.end_s.max()
     window = dr[(dr.end_time - off >= lo) & (dr.start_time - off <= hi)]
