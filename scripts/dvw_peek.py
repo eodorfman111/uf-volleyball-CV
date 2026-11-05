@@ -23,7 +23,7 @@ def main():
     a = p.parse_args()
     sec = read_sections(a.dvw)
     print("sections:", ", ".join(f"{k}({len(v)})" for k, v in sec.items()))
-    scout = next((v for k, v in sec.items() if k.upper().endswith("SCOUT")), [])
+    scout = sec.get("3SCOUT", [])
     scout = [l for l in scout if l.strip()]
     skills = collections.Counter(l[3:4] for l in scout if len(l) > 3 and l[0] in "*a")
     print("scout lines:", len(scout), "skills:", dict(skills))
