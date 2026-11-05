@@ -77,7 +77,12 @@ def main():
         print("offset_s, scout serves with a pipeline rally start within 8 s before to 2 s after, scout serves inside the section")
         for hits, inside, off_ in top_offsets(res):
             print(f"  {off_:7.0f}  {hits:3d} of {inside}")
-    off, score = (a.offset, None) if a.offset is not None else fit_offset(dr, pr, *a.offset_range)
+    if a.offset is not None:
+        off = a.offset
+    else:
+        best = top_offsets(start_counts(dr, pr, *a.offset_range), n=1)[0][2]
+        off, _ = fit_offset(dr, pr, best - 10, best + 10)
+        print(f"fitted offset {off:.0f} s (serve-to-start counts, refined by interval overlap)")
     lo, hi = pr.start_s.min(), pr.end_s.max()
     window = dr[(dr.end_time - off >= lo) & (dr.start_time - off <= hi)]
     pairs = match(window, pr, off)
