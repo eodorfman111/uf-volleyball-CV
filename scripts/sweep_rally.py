@@ -35,7 +35,7 @@ def evaluate(rallies, truth, tol):
     return sum(covered), sum(false)
 
 
-def sweep(cfg, ball, meta, truth, grid, tol, target=None):
+def sweep(cfg, ball, meta, truth, grid, tol, target=None, span=None):
     check_keys(cfg, grid)
     target = len(truth) if truth else target
     keys = list(grid)
@@ -45,6 +45,8 @@ def sweep(cfg, ball, meta, truth, grid, tol, target=None):
         for k, v in zip(keys, combo):
             set_dotted(c, k, v)
         rallies = segment_rallies(ball, meta, c["events"]["rally"])
+        if span:
+            rallies = rallies[(rallies.start_frame >= span[0]) & (rallies.start_frame < span[1])]
         covered, false = evaluate(rallies, truth, tol)
         rows.append(
             {
@@ -68,13 +70,14 @@ def main():
     p.add_argument("--target", type=int, default=None, help="known number of plays when the frames are not available")
     p.add_argument("--grid", action="append", default=[], metavar="KEY=V1|V2|V3")
     p.add_argument("--tol", type=int, default=45)
+    p.add_argument("--span", type=int, nargs=2, default=None, metavar=("START_FRAME", "END_FRAME"), help="score only rallies that start in this frame range (truth frames should be inside it too)")
     a = p.parse_args()
     cfg = load_config(a.config)
     meta = load_meta(cfg)
     ball = pd.read_csv(run_dir(cfg) / "track" / "ball.csv")
     truth = [int(v) for v in a.plays.split(",") if v]
     pd.set_option("display.width", 250)
-    print(sweep(cfg, ball, meta, truth, parse_grid(a.grid), a.tol, a.target).to_string())
+    print(sweep(cfg, ball, meta, truth, parse_grid(a.grid), a.tol, a.target, a.span).to_string())
 
 
 if __name__ == "__main__":
