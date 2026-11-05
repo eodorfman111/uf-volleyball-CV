@@ -23,6 +23,9 @@ def main():
     a = p.parse_args()
     sec = read_sections(a.dvw)
     print("sections:", ", ".join(f"{k}({len(v)})" for k, v in sec.items()))
+    for name in ("3MATCH", "3SET"):
+        for l in [x for x in sec.get(name, []) if x.strip()][:8]:
+            print(name, ";".join(l.split(";")[:6]))
     scout = sec.get("3SCOUT", [])
     scout = [l for l in scout if l.strip()]
     skills = collections.Counter(l[3:4] for l in scout if len(l) > 3 and l[0] in "*a")
