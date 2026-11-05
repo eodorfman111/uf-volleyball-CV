@@ -35,6 +35,11 @@ def evaluate(rallies, truth, tol):
     return sum(covered), sum(false)
 
 
+def merged_plays(rallies, truth, tol):
+    spans = list(zip(rallies.start_frame, rallies.end_frame))
+    return sum(max(sum(s - tol <= t <= e for t in truth) - 1, 0) for s, e in spans)
+
+
 def sweep(cfg, ball, meta, truth, grid, tol, target=None, span=None):
     check_keys(cfg, grid)
     target = len(truth) if truth else target
@@ -56,11 +61,13 @@ def sweep(cfg, ball, meta, truth, grid, tol, target=None, span=None):
                 "plays_found": f"{covered}/{len(truth)}",
                 "missed": len(truth) - covered,
                 "false_rallies": false,
+                "merged": merged_plays(rallies, truth, tol),
             }
         )
     out = pd.DataFrame(rows)
     out["off_by"] = (out.rallies - (target if target is not None else len(truth))).abs()
-    return out.sort_values(["missed", "false_rallies", "off_by", "play_s"], kind="stable").reset_index(drop=True)
+    out["errors"] = out.missed + out.false_rallies + out.merged
+    return out.sort_values(["errors", "missed", "false_rallies", "off_by", "play_s"], kind="stable").reset_index(drop=True)
 
 
 def main():
@@ -77,7 +84,8 @@ def main():
     ball = pd.read_csv(run_dir(cfg) / "track" / "ball.csv")
     truth = [int(v) for v in a.plays.split(",") if v]
     pd.set_option("display.width", 250)
-    print(sweep(cfg, ball, meta, truth, parse_grid(a.grid), a.tol, a.target, a.span).to_string())
+    table = sweep(cfg, ball, meta, truth, parse_grid(a.grid), a.tol, a.target, a.span)
+    print(table[["params", "rallies", "plays_found", "missed", "false_rallies", "merged", "errors"]].to_string(index=False))
 
 
 if __name__ == "__main__":
