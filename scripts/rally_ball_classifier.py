@@ -156,7 +156,7 @@ def run(ball, rallies, fps, offset, lead=2.0, tail=1.0, thr=0.5, min_len=4, merg
         sel = [(a, b) for a, b in pred if folds[min(int((a + b) / 2), n_sec - 1)] == s]
         tr = [t for t, r in zip(truth, rallies.itertuples()) if int(r.set) == s]
         per_set[int(s)] = evaluate(sel, tr)
-    return {"offset": offset, "second_accuracy": round(acc, 3), "overall": evaluate(pred, truth), "per_set": per_set}, prob, y, pred
+    return {"offset": offset, "second_accuracy": round(acc, 3), "overall": evaluate(pred, truth), "per_set": per_set, "folds": folds}, prob, y, pred
 
 
 def rule_baseline(config, truth_offset, rallies):
@@ -189,6 +189,29 @@ def sweep_postprocess(prob, truth, n_top=8):
     return pd.DataFrame(rows).sort_values(["f1", "merged"], ascending=[False, True]).head(n_top)
 
 
+def subset_eval(prob, folds, rallies, offset, sets, params):
+    n_sec = len(prob)
+    pred = to_intervals(prob, params["thr"], params["min_len"], params["merge_gap"], params["smooth"])
+    sel = [(a, b) for a, b in pred if folds[min(int((a + b) / 2), n_sec - 1)] in sets]
+    tr = [(r.start_time - offset, r.end_time - offset) for r in rallies.itertuples() if int(r.set) in sets]
+    e = evaluate(sel, tr)
+    e["f1"] = round(2 * e["recall"] * e["precision"] / max(e["recall"] + e["precision"], 1e-9), 3)
+    return e
+
+
+def tune_then_test(prob, folds, rallies, offset, tune_sets, test_sets):
+    best, best_f1 = None, -1.0
+    for thr in (0.15, 0.2, 0.25, 0.3, 0.4, 0.5):
+        for min_len in (2, 3, 4, 6):
+            for merge_gap in (1, 2, 3, 5, 8):
+                for smooth in (1, 3, 5, 7):
+                    params = {"thr": thr, "min_len": min_len, "merge_gap": merge_gap, "smooth": smooth}
+                    f1 = subset_eval(prob, folds, rallies, offset, tune_sets, params)["f1"]
+                    if f1 > best_f1:
+                        best, best_f1 = params, f1
+    return best, best_f1, subset_eval(prob, folds, rallies, offset, test_sets, best)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("config")
@@ -217,6 +240,10 @@ def main():
     if a.sweep:
         truth = [(r.start_time - res["offset"], r.end_time - res["offset"]) for r in rallies.itertuples()]
         print(sweep_postprocess(prob, truth).to_string(index=False))
+    if a.sweep:
+        for tune, test in (({1, 2, 3}, {4, 5}), ({3, 4, 5}, {1, 2}), ({1, 2, 5}, {3, 4})):
+            params, f1_tune, held = tune_then_test(prob, res["folds"], rallies, res["offset"], tune, test)
+            print("tuned on sets", sorted(tune), params, "f1", f1_tune, "-> held-out sets", sorted(test), json.dumps(held))
     if a.baseline:
         print("rule baseline", json.dumps(rule_baseline(a.config, res["offset"], rallies)))
     out = Path(run_dir(cfg)) / "rally_cls"
