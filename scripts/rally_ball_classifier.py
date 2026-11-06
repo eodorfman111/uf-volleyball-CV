@@ -176,6 +176,19 @@ def rule_baseline(config, truth_offset, rallies):
     return evaluate(pred, truth)
 
 
+def sweep_postprocess(prob, truth, n_top=8):
+    rows = []
+    for thr in (0.25, 0.3, 0.4, 0.5, 0.6):
+        for min_len in (2, 3, 4, 6):
+            for merge_gap in (1, 2, 3, 5):
+                for smooth in (1, 3, 5):
+                    pred = to_intervals(prob, thr, min_len, merge_gap, smooth)
+                    e = evaluate(pred, truth)
+                    f1 = 2 * e["recall"] * e["precision"] / max(e["recall"] + e["precision"], 1e-9)
+                    rows.append({"thr": thr, "min_len": min_len, "merge_gap": merge_gap, "smooth": smooth, "pred": e["pred"], "recall": e["recall"], "precision": e["precision"], "merged": e["merged"], "split": e["split"], "f1": round(f1, 3)})
+    return pd.DataFrame(rows).sort_values(["f1", "merged"], ascending=[False, True]).head(n_top)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("config")
@@ -188,6 +201,7 @@ def main():
     p.add_argument("--smooth", type=int, default=3)
     p.add_argument("--no-fit", action="store_true")
     p.add_argument("--baseline", action="store_true")
+    p.add_argument("--sweep", action="store_true")
     a = p.parse_args()
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from vbcv.config import load_config, run_dir
@@ -200,6 +214,9 @@ def main():
     print("second accuracy", res["second_accuracy"], "offset", res["offset"])
     for s, r in res["per_set"].items():
         print("set", s, json.dumps(r))
+    if a.sweep:
+        truth = [(r.start_time - res["offset"], r.end_time - res["offset"]) for r in rallies.itertuples()]
+        print(sweep_postprocess(prob, truth).to_string(index=False))
     if a.baseline:
         print("rule baseline", json.dumps(rule_baseline(a.config, res["offset"], rallies)))
     out = Path(run_dir(cfg)) / "rally_cls"
