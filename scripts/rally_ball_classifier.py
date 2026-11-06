@@ -108,7 +108,10 @@ def evaluate(pred, truth, min_overlap=1.0):
     merged = sum(max(len(h) - 1, 0) for h in hit_p)
     split = sum(max(len(h) - 1, 0) for h in hit_t)
     starts = [abs(pred[h[0]][0] - t[0]) for t, h in zip(truth, hit_t) if len(h) == 1 and len(hit_p[h[0]]) == 1]
+    exact = len(starts)
     return {
+        "exact": exact,
+        "exact_f1": round(2 * exact / max(len(truth) + len(pred), 1), 3),
         "truth": len(truth),
         "pred": len(pred),
         "recall": round(covered / max(len(truth), 1), 3),
@@ -184,8 +187,7 @@ def sweep_postprocess(prob, truth, n_top=8):
                 for smooth in (1, 3, 5):
                     pred = to_intervals(prob, thr, min_len, merge_gap, smooth)
                     e = evaluate(pred, truth)
-                    f1 = 2 * e["recall"] * e["precision"] / max(e["recall"] + e["precision"], 1e-9)
-                    rows.append({"thr": thr, "min_len": min_len, "merge_gap": merge_gap, "smooth": smooth, "pred": e["pred"], "recall": e["recall"], "precision": e["precision"], "merged": e["merged"], "split": e["split"], "f1": round(f1, 3)})
+                    rows.append({"thr": thr, "min_len": min_len, "merge_gap": merge_gap, "smooth": smooth, "pred": e["pred"], "exact": e["exact"], "recall": e["recall"], "precision": e["precision"], "merged": e["merged"], "f1": e["exact_f1"]})
     return pd.DataFrame(rows).sort_values(["f1", "merged"], ascending=[False, True]).head(n_top)
 
 
@@ -195,7 +197,7 @@ def subset_eval(prob, folds, rallies, offset, sets, params):
     sel = [(a, b) for a, b in pred if folds[min(int((a + b) / 2), n_sec - 1)] in sets]
     tr = [(r.start_time - offset, r.end_time - offset) for r in rallies.itertuples() if int(r.set) in sets]
     e = evaluate(sel, tr)
-    e["f1"] = round(2 * e["recall"] * e["precision"] / max(e["recall"] + e["precision"], 1e-9), 3)
+    e["f1"] = e["exact_f1"]
     return e
 
 
